@@ -1,0 +1,15 @@
+{
+  "name": "수행평가 알리미 · 충주대원고",
+  "short_name": "수행평가 알리미",
+  "description": "충주대원고 수행평가 일정을 주차별로 관리하고 마감 전에 알려주는 플래너",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f1",
+  "theme_color": "#f5f5f1",
+  "lang": "ko",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

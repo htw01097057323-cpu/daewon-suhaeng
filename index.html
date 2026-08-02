@@ -1,0 +1,1442 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#f5f5f1" />
+<meta name="description" content="충주대원고 수행평가 일정을 주차별로 관리하고 마감 전에 알려주는 플래너" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>수행평가 알리미 | 충주대원고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#24251f;--muted:#7a7c72;--paper:#f5f5f1;--panel:#fff;--line:#e6e6df;--purple:#7867d9;--green:#5e927c;--orange:#dc8c52;--blue:#5c83bc;--pink:#c97291;--shadow:0 12px 35px rgba(36,37,31,.06)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans KR',sans-serif}
+.noise{position:fixed;inset:0;opacity:.025;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.app-shell{min-height:100vh;display:grid;grid-template-columns:248px 1fr}
+.sidebar{position:sticky;top:0;height:100vh;padding:34px 24px;background:#ededE7;border-right:1px solid #deded7;display:flex;flex-direction:column;z-index:3}
+.brand{display:flex;gap:12px;align-items:center;text-decoration:none;color:var(--ink);margin:0 8px 52px}
+.brand-mark{width:42px;height:42px;border-radius:50% 50% 46% 54%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:'Gowun Dodum';font-size:20px;transform:rotate(-5deg)}
+.brand strong,.brand small{display:block}.brand strong{font-size:17px}.brand small{font-size:11px;color:var(--muted);margin-top:2px}
+.sidebar nav{display:grid;gap:8px}
+.nav-item{border:0;background:transparent;padding:12px 15px;border-radius:13px;text-align:left;font:500 14px inherit;color:#696b62;cursor:pointer;display:flex;gap:14px;align-items:center}
+.nav-item span{width:20px;text-align:center;font-size:18px}
+.nav-item:hover,.nav-item.active{background:#fff;color:var(--ink);box-shadow:0 4px 15px rgba(30,30,20,.04)}
+.sidebar-bottom{margin-top:auto;display:grid;gap:15px}
+.school-card{background:#e2e2da;border-radius:16px;padding:14px;display:flex;gap:10px;align-items:center;position:relative}
+.school-icon{width:32px;height:32px;background:#fff;border-radius:10px;display:grid;place-items:center;font-family:serif}
+.school-card b,.school-card small{display:block}.school-card b{font-size:11px}.school-card small{font-size:10px;color:var(--muted);margin-top:3px}
+.school-card i{width:7px;height:7px;background:#6da17e;border-radius:50%;position:absolute;right:12px;top:12px}
+.topbar{min-height:142px;padding:40px 5vw 26px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.eyebrow,.card-label{font-size:10px;font-weight:700;letter-spacing:.16em;color:#92938a;text-transform:uppercase;margin:0 0 8px}
+.topbar h1{font-family:'Gowun Dodum';font-size:25px;font-weight:400;margin:0}
+.header-actions{display:flex;gap:12px;flex:none}
+.primary-btn,.secondary-btn,.danger-btn,.icon-btn,.text-btn,.calendar-toolbar button{font:600 13px inherit;border:0;cursor:pointer}
+.primary-btn{background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px}
+.secondary-btn{background:#efefe9;color:var(--ink);padding:11px 16px;border-radius:11px}
+.danger-btn{background:#f7e6e6;color:#af4c4c;padding:11px 16px;border-radius:11px}
+.icon-btn{width:43px;height:43px;border-radius:50%;background:#fff;position:relative}
+.icon-btn i{position:absolute;width:7px;height:7px;border-radius:50%;background:#e66f61;right:7px;top:7px;display:none}
+.icon-btn i.on{display:block}
+.mobile-menu{display:none}
+.view{display:none;padding:0 5vw 60px}.view.active{display:block}
+.summary-grid{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:14px}
+.hero-card,.stat-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.hero-card{min-height:175px;padding:28px 30px;background:#272821;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px;overflow:hidden;position:relative}
+.hero-card:before{content:"";position:absolute;width:190px;height:190px;border:1px solid rgba(255,255,255,.08);border-radius:50%;right:-30px;top:-80px}
+.hero-card>div:first-child{position:relative;z-index:1;min-width:0}
+.hero-card h2{font-family:'Gowun Dodum';font-size:23px;font-weight:400;margin:0 0 9px;line-height:1.4}
+.hero-card p:not(.card-label){font-size:12px;color:#b8b9b1;margin:0;line-height:1.6}
+.deadline-orbit{width:105px;height:105px;border-radius:50%;border:1px solid #56574e;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:1;flex:none}
+.deadline-orbit span{font-family:'Gowun Dodum';font-size:26px}
+.deadline-orbit small{font-size:10px;color:#aaa;margin-top:3px}
+.stat-card{padding:24px 20px;display:flex;flex-direction:column;justify-content:space-between;min-height:175px}
+.stat-icon{width:39px;height:39px;border-radius:12px;display:grid;place-items:center}
+.lavender{background:#edeafb;color:#7565ce}.yellow{background:#fbf2d8;color:#b48c2b}.mint{background:#e4f1eb;color:#4b8b6d}
+.stat-card small,.stat-card strong{display:block}
+.stat-card small{font-size:11px;color:var(--muted);margin-bottom:7px}
+.stat-card strong{font-family:'Gowun Dodum';font-size:31px;font-weight:400}
+.content-grid{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(260px,1fr);gap:14px;margin-top:14px}
+.panel{padding:27px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.panel h2{font-family:'Gowun Dodum';font-size:20px;font-weight:400;margin:0}
+.text-btn{background:none;color:#77796f}
+.task-list{display:grid}
+.task-item{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:14px;padding:16px 3px;border-top:1px solid #ecece6}
+.task-item:first-child{border-top:0}
+.task-item.past{opacity:.5}
+.subject-dot{width:9px;height:9px;border-radius:50%}
+.subject-dot.purple{background:var(--purple)}.subject-dot.green{background:var(--green)}.subject-dot.orange{background:var(--orange)}.subject-dot.blue{background:var(--blue)}.subject-dot.pink{background:var(--pink)}
+.task-info{min-width:0}
+.task-info b,.task-info small{display:block}
+.task-info b{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-info small{font-size:11px;color:var(--muted);margin-top:4px}
+.dday{font-size:11px;background:#f1f1ec;padding:6px 9px;border-radius:20px;white-space:nowrap}
+.dday.urgent{background:#fae8e4;color:#c05b4f}
+.dday.past{background:#ecece7;color:#9a9b94}
+.task-menu{border:0;background:none;font-size:19px;color:#aaa;cursor:pointer}
+.empty{padding:46px 10px;text-align:center;color:#999;font-size:13px}
+.mini-week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day-cell{text-align:center;padding:10px 2px;border-radius:20px}
+.day-cell small,.day-cell b{display:block}
+.day-cell small{font-size:9px;color:#999}
+.day-cell b{font-size:13px;margin-top:10px}
+.day-cell.today{background:#292a24;color:#fff}
+.day-cell.today small{color:#b9bab2}
+.day-cell.has-task:after{content:"";display:block;width:4px;height:4px;margin:7px auto 0;background:#8474da;border-radius:50%}
+.quote{margin-top:28px;background:#f3f1e8;border-radius:15px;padding:20px;display:flex;gap:10px}
+.quote span{font-family:serif;font-size:28px;color:#b1a478}
+.quote p{font-family:'Gowun Dodum';font-size:13px;line-height:1.7;margin:5px 0;flex:1}
+.quote span.close{align-self:flex-end;line-height:1}
+.calendar-panel{min-height:620px}
+.calendar-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:26px}
+.calendar-toolbar h2{min-width:170px;text-align:center;font-family:'Gowun Dodum';font-size:20px;font-weight:400;margin:0}
+.calendar-toolbar button{width:35px;height:35px;border-radius:10px;background:#f1f1eb}
+.calendar-toolbar .today-btn{width:auto;padding:0 15px;margin-left:auto}
+.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.calendar-weekdays span{text-align:center;font-size:11px;color:#92938b;padding:10px}
+.calendar-day{min-height:92px;padding:9px;border-top:1px solid #ecece5;border-right:1px solid #f2f2ee;font-size:11px}
+.calendar-day.other{color:#c7c7c0}
+.calendar-day.today>span{background:#292a24;color:#fff;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;margin-top:-5px}
+.calendar-task{margin-top:6px;border-radius:6px;padding:4px 6px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px;cursor:pointer}
+.calendar-task.purple{background:var(--purple)}.calendar-task.green{background:var(--green)}.calendar-task.orange{background:var(--orange)}.calendar-task.blue{background:var(--blue)}.calendar-task.pink{background:var(--pink)}
+.calendar-more{font-size:9px;color:#9a9b93;margin-top:4px}
+.task-toolbar{gap:20px}
+.filters{display:flex;gap:8px;align-items:center}
+.filters input,.filters select,input,select,textarea{border:1px solid #deded7;background:#fafaf7;border-radius:10px;padding:11px 12px;font:400 13px inherit;color:var(--ink);outline:none}
+.filters input:focus,.filters select:focus,input:focus,select:focus,textarea:focus{border-color:#aaa99f}
+.filters label.check{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);white-space:nowrap}
+.filters input[type=checkbox]{width:15px;height:15px;padding:0;accent-color:var(--purple)}
+.all.task-list .task-item{grid-template-columns:auto 1fr auto auto auto}
+.pill{font-size:10px;font-weight:700;color:#6e5ec5;background:#edeafb;border-radius:20px;padding:5px 10px;white-space:nowrap}
+.sync-hero{border-radius:20px;background:#dfe6d9;padding:38px 45px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;overflow:hidden}
+.sync-hero h2{font-family:'Gowun Dodum';font-size:29px;font-weight:400;margin:0 0 13px}
+.sync-hero p:not(.card-label){font-size:12px;color:#6d7468;line-height:1.7;margin:0}
+.sync-illustration{display:flex;position:relative;margin-right:40px}
+.sync-illustration span{width:58px;height:76px;background:#fff;border:1px solid #cad3c5;border-radius:8px;display:grid;place-items:center;font-family:serif;font-size:19px;margin-left:-12px;transform:rotate(5deg);box-shadow:0 8px 20px rgba(50,70,50,.08)}
+.sync-illustration span:nth-child(2){transform:translateY(-10px) rotate(-4deg)}
+.sync-illustration i{position:absolute;right:-32px;bottom:-12px;width:44px;height:44px;background:#292a24;color:#fff;border-radius:50%;display:grid;place-items:center;font-style:normal}
+.manage-note{font-size:11px;line-height:1.65;color:#77796f;background:#f5f5ef;padding:12px 15px;border-radius:10px;margin:0 0 6px}
+.manage-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.foot-note{font-size:11px;color:#92938a;line-height:1.8;margin:20px 4px 0}
+dialog{width:min(520px,calc(100vw - 28px));border:0;border-radius:20px;padding:0;box-shadow:0 25px 80px rgba(0,0,0,.2)}
+dialog::backdrop{background:rgba(25,26,22,.46);backdrop-filter:blur(3px)}
+dialog form{padding:28px}
+.modal-head{display:flex;justify-content:space-between;align-items:start;margin-bottom:24px}
+.modal-head h2{font-family:'Gowun Dodum';font-weight:400;margin:0}
+.close-btn{border:0;background:#f1f1ec;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer}
+label{display:grid;gap:7px;font-size:11px;font-weight:600;margin-top:14px}
+label input,label select,label textarea{width:100%;resize:none}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;align-items:center;gap:8px;margin-top:25px}
+.modal-actions span{flex:1}
+.hidden{display:none}
+.setting-row{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#f5f5f0;border-radius:12px;padding:14px}
+.setting-row b,.setting-row small{display:block}
+.setting-row b{font-size:13px}
+.setting-row small,.modal-help{font-size:10px;color:#888;margin-top:4px}
+.modal-help{line-height:1.6}
+.alert-pop{position:fixed;right:20px;bottom:20px;width:min(330px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 45px rgba(36,37,31,.16);padding:17px 19px;z-index:30;display:none}
+.alert-pop.show{display:block;animation:popUp .25s ease}
+@keyframes popUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.alert-pop p.card-label{margin-bottom:6px}
+.alert-pop h4{margin:0 0 10px;font-family:'Gowun Dodum';font-size:15px;font-weight:400;padding-right:22px}
+.alert-pop ul{margin:0;padding-left:15px;font-size:11px;color:#55574e;line-height:1.75}
+.alert-pop .x{position:absolute;right:11px;top:11px;border:0;background:#f1f1ec;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1}
+.perm-warn{font-size:10px;line-height:1.65;color:#8a6a2a;background:#fbf2d8;border-radius:10px;padding:10px 12px;margin:12px 0 0}
+.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,30px);background:#282923;color:#fff;border-radius:12px;padding:12px 18px;font-size:12px;opacity:0;pointer-events:none;transition:.25s;z-index:20}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.tone-purple{background:var(--purple)}.tone-green{background:var(--green)}.tone-orange{background:var(--orange)}.tone-blue{background:var(--blue)}.tone-pink{background:var(--pink)}
+.stat-card .more{align-self:flex-start;padding:0;font:600 11px inherit;color:#8a8c84;background:none;border:0;cursor:pointer}
+.stat-card .more:hover{color:var(--ink)}
+.ongoing-strip{display:flex;gap:7px;align-items:center;flex-wrap:wrap;background:#f5f5ef;border-radius:12px;padding:11px 14px;margin-bottom:18px;font-size:11px;color:#77796f}
+.ongoing-strip b{font-size:11px;color:var(--ink);margin-right:4px}
+.chip{font-size:10px;font-weight:600;color:#fff;border-radius:20px;padding:5px 10px;border:0;cursor:pointer;font-family:inherit}
+.cal-month{border-top:1px solid #ecece5}
+.cal-week{border-bottom:1px solid #f2f2ee}
+.cal-week-days{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-daynum{padding:9px 10px 2px;font-size:11px;border-right:1px solid #f7f7f3}
+.cal-daynum.other{color:#c7c7c0}
+.cal-daynum.today span{background:#292a24;color:#fff;width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;font-size:10px}
+.cal-lanes{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:3px 4px 9px;min-height:38px}
+.cal-bar{border-radius:6px;padding:4px 7px;font-size:9px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;min-width:0}
+.cal-bar.mid{border-radius:0}.cal-bar.head{border-top-right-radius:0;border-bottom-right-radius:0}.cal-bar.tail{border-top-left-radius:0;border-bottom-left-radius:0}
+.cal-more{justify-self:start;font:600 10px inherit;color:#8a8c84;background:#f3f3ee;border:0;border-radius:7px;padding:4px 9px;cursor:pointer}
+.week-plan{display:grid;gap:14px;margin-top:14px}
+.week-card{scroll-margin-top:16px}
+.week-card.now{border-color:#cdc6f0;box-shadow:0 12px 35px rgba(120,103,217,.13)}
+.week-card .panel-head{align-items:flex-start}
+.week-range{margin:7px 0 0;font-size:11px;color:var(--muted)}
+.week-card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.week-count{font-size:10px;font-weight:700;color:#6e5ec5;background:#edeafb;border-radius:20px;padding:6px 11px;white-space:nowrap}
+.week-count.zero{color:#9a9b93;background:#f1f1ec}
+.week-sum{display:flex;gap:6px;flex-wrap:wrap}
+.week-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.week-tab{border:1px solid var(--line);background:#fafaf7;border-radius:20px;padding:8px 14px;font:600 11px inherit;color:#77796f;cursor:pointer}
+.week-tab:hover{border-color:#c9c9c0}
+.week-tab.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.week-tab small{display:block;font-size:9px;font-weight:400;opacity:.75;margin-top:2px}
+.nav-item span svg,.icon-btn span svg{width:17px;height:17px;display:block}
+.icon-btn span{display:grid;place-items:center}
+.icon-btn span svg{width:19px;height:19px}
+.school-card{text-decoration:none;color:inherit}
+a.school-card{padding-bottom:27px}
+a.school-card:hover{background:#dcdcd3}
+.school-card .go{position:absolute;right:12px;bottom:11px;font-size:9px;color:#8b8d84}
+.grade-select{padding:11px 12px;border-radius:12px;font:600 12px inherit;min-width:104px}
+.dialog-list{max-height:58vh;overflow:auto;margin-top:6px}
+@media(max-width:820px){.week-card .panel-head{flex-direction:column;gap:12px}.week-card-actions{justify-content:flex-start;width:100%}.grade-select{min-width:0;padding:11px 8px;font-size:11px}}
+@media(max-width:1050px){.summary-grid{grid-template-columns:2fr repeat(3,130px)}.app-shell{grid-template-columns:210px 1fr}.sidebar{padding:30px 16px}.topbar,.view{padding-left:3vw;padding-right:3vw}}
+@media(max-width:820px){.app-shell{display:block}.sidebar{position:fixed;left:-260px;width:240px;transition:.25s;box-shadow:15px 0 40px rgba(0,0,0,.12)}.sidebar.open{left:0}.mobile-menu{display:block;border:0;background:none;font-size:21px;margin-right:10px}.topbar{min-height:112px;padding-top:24px}.topbar>div:first-of-type{flex:1;min-width:0}.topbar h1{font-size:18px}.summary-grid{grid-template-columns:repeat(3,1fr)}.hero-card{grid-column:1/-1}.content-grid{grid-template-columns:1fr}.sync-hero{padding:30px}.sync-illustration{display:none}}
+@media(max-width:560px){.header-actions .icon-btn{display:none}.primary-btn{padding:11px 13px}.summary-grid{grid-template-columns:repeat(3,1fr);gap:8px}.stat-card{min-height:120px;padding:15px 11px}.stat-icon{width:31px;height:31px}.stat-card strong{font-size:25px}.hero-card{min-height:155px;padding:22px}.deadline-orbit{width:84px;height:84px}.deadline-orbit span{font-size:21px}.view{padding-left:14px;padding-right:14px}.panel{padding:20px 16px}.task-item{gap:9px}.task-toolbar{align-items:flex-start;flex-direction:column}.filters{width:100%;flex-wrap:wrap}.filters>*{min-width:0}.calendar-day{min-height:70px;padding:5px}.calendar-task{font-size:0;height:6px;padding:0;margin-top:4px}.calendar-more{display:none}.sync-hero{padding:24px}.form-row{grid-template-columns:1fr}.all.task-list .task-item{grid-template-columns:auto 1fr auto auto}.all.task-list .task-item .pill{display:none}}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="#" aria-label="수행평가 알리미 홈">
+      <span class="brand-mark">수</span>
+      <span><strong>수행평가 알리미</strong><small>충주대원고 1학기</small></span>
+    </a>
+
+    <nav aria-label="주 메뉴">
+      <button class="nav-item active" data-view="dashboard"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="M9.5 20.5v-6h5v6"/></svg></span>오늘</button>
+      <button class="nav-item" data-view="month"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.8" width="18" height="16" rx="2.5"/><path d="M3 9.6h18M8 2.9v3.6M16 2.9v3.6"/><path d="M7.4 13.2h2M11 13.2h2M14.6 13.2h2M7.4 17h2M11 17h2"/></svg></span>월별 달력</button>
+      <button class="nav-item" data-view="week"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.8" width="18" height="16" rx="2.5"/><path d="M3 9.6h18M3 14.6h18M8 2.9v3.6M16 2.9v3.6"/></svg></span>주차별 계획</button>
+      <button class="nav-item" data-view="tasks"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11M4 12h11M4 17h7"/><path d="m16.8 16.6 1.9 1.9 3.1-3.8"/></svg></span>전체 일정</button>
+      <button class="nav-item" data-view="manage"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h9M17.5 7.5H20M4 16.5h3M11.5 16.5H20"/><circle cx="15.2" cy="7.5" r="2.3"/><circle cx="9.2" cy="16.5" r="2.3"/></svg></span>일정 관리</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a class="school-card" href="https://school.cbe.go.kr/daewon-h/" target="_blank" rel="noopener noreferrer" title="충주대원고등학교 공식 홈페이지 열기">
+        <span class="school-icon">大</span>
+        <div><b>충주대원고등학교</b><small>2026학년도 1학기 평가계획</small></div>
+        <i></i>
+        <span class="go">공식 홈페이지 ↗</span>
+      </a>
+      <button class="nav-item" id="settingsBtn"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.5a6 6 0 1 0-12 0c0 5.5-2 6.8-2 6.8h16s-2-1.3-2-6.8"/><path d="M13.8 19a2 2 0 0 1-3.6 0"/><circle cx="17.6" cy="5.2" r="2.6" fill="currentColor" stroke="none"/></svg></span>알림 설정</button>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <button class="mobile-menu" id="mobileMenu" aria-label="메뉴 열기">☰</button>
+      <div>
+        <p class="eyebrow" id="todayLabel"></p>
+        <h1 id="pageTitle">안녕하세요, 오늘도 미리 준비해요.</h1>
+      </div>
+      <div class="header-actions">
+        <select id="globalGrade" class="grade-select" aria-label="학년 선택">
+          <option value="all">전체 학년</option>
+          <option value="1">1학년</option>
+          <option value="2">2학년</option>
+          <option value="3">3학년</option>
+          <option value="none">학년 미지정</option>
+        </select>
+        <button class="icon-btn" id="notificationBtn" aria-label="임박한 수행평가 알림"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.5a6 6 0 1 0-12 0c0 5.5-2 6.8-2 6.8h16s-2-1.3-2-6.8"/><path d="M13.8 19a2 2 0 0 1-3.6 0"/></svg></span><i id="alertDot"></i></button>
+        <button class="primary-btn" id="addTaskBtn"><span>＋</span> 일정 추가</button>
+      </div>
+    </header>
+
+    <section id="dashboardView" class="view active">
+      <div class="summary-grid">
+        <article class="hero-card">
+          <div>
+            <p class="card-label">가장 가까운 수행평가</p>
+            <h2 id="nearestTitle">예정된 수행평가가 없어요</h2>
+            <p id="nearestMeta">일정 관리에서 수행평가를 추가해 보세요.</p>
+          </div>
+          <div class="deadline-orbit"><span id="nearestDday">–</span><small id="nearestNote">남았어요</small></div>
+        </article>
+        <article class="stat-card"><span class="stat-icon lavender">✓</span><div><small id="soonLabel">7일 이내 마감</small><strong id="weekCount">0</strong></div><button class="more" data-list="soon">더보기 →</button></article>
+        <article class="stat-card"><span class="stat-icon yellow">◷</span><div><small>남은 수행평가</small><strong id="openCount">0</strong></div><button class="more" data-list="open">더보기 →</button></article>
+        <article class="stat-card"><span class="stat-icon mint">↗</span><div><small>지난 수행평가</small><strong id="doneCount">0</strong></div><button class="more" data-list="past">더보기 →</button></article>
+      </div>
+
+      <div class="content-grid">
+        <section class="panel task-panel">
+          <div class="panel-head">
+            <div><p class="card-label">UPCOMING</p><h2>다가오는 수행평가</h2></div>
+            <div class="filters"><select id="dashboardSubject" aria-label="과목"><option value="all">모든 과목</option></select></div>
+          </div>
+          <div id="upcomingList" class="task-list"></div>
+        </section>
+
+        <aside class="panel week-panel">
+          <div class="panel-head"><div><p class="card-label">WEEKLY VIEW</p><h2>이번 주</h2></div></div>
+          <div id="miniWeek" class="mini-week"></div>
+          <div class="quote"><span>“</span><p>미리 시작한 하루가<br>마감 전날의 나를 구해요.</p><span class="close">”</span></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="monthView" class="view">
+      <div class="panel calendar-panel">
+        <div class="calendar-toolbar"><button id="prevMonth">←</button><h2 id="calendarMonth"></h2><button id="nextMonth">→</button><button class="today-btn" id="goToday">이번 달</button></div>
+        <div id="monthOngoing" class="ongoing-strip"></div>
+        <div class="calendar-weekdays"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+        <div id="monthGrid" class="cal-month"></div>
+      </div>
+    </section>
+
+    <section id="weekView" class="view">
+      <div class="panel">
+        <div class="calendar-toolbar"><button id="prevWeekMonth">←</button><h2 id="weekLabel"></h2><button id="nextWeekMonth">→</button><button class="today-btn" id="goThisMonth">이번 달</button></div>
+        <p class="card-label">이 달을 주차로 나눠 계획해요</p>
+        <div id="weekTabs" class="week-tabs"></div>
+        <div id="weekOngoing" class="ongoing-strip"></div>
+      </div>
+      <div id="weekPlan" class="week-plan"></div>
+    </section>
+
+    <section id="tasksView" class="view">
+      <div class="panel">
+        <div class="panel-head task-toolbar">
+          <div><p class="card-label">ALL TASKS</p><h2>전체 수행평가</h2></div>
+          <div class="filters">
+            <input id="searchInput" type="search" placeholder="평가명·과목 검색"/>
+            <select id="subjectFilter"><option value="all">모든 과목</option></select>
+            <label class="check"><input type="checkbox" id="showPast" checked> 지난 일정</label>
+          </div>
+        </div>
+        <p class="manage-note" id="totalCount">총 0건</p>
+        <div id="allTaskList" class="task-list all"></div>
+      </div>
+    </section>
+
+    <section id="manageView" class="view">
+      <div class="sync-hero">
+        <div>
+          <p class="card-label">SCHOOL PLAN</p>
+          <h2>학교 평가계획을<br>내 일정으로 관리해요.</h2>
+          <p>2026학년도 1학기 교수학습 및 평가계획에서 정리한 일정이에요.<br>공지가 바뀌면 아래에서 직접 수정·추가해 최신 상태로 유지하세요.</p>
+        </div>
+        <div class="sync-illustration"><span>文</span><span>英</span><span>數</span><i>↻</i></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head task-toolbar">
+          <div><p class="card-label">MY PLANNER</p><h2>일정 관리</h2></div>
+          <div class="filters">
+            <select id="manageSubject" aria-label="과목"><option value="all">모든 과목</option></select>
+            <button class="primary-btn" id="addTaskBtn2">＋ 일정 추가</button>
+          </div>
+        </div>
+        <p class="manage-note">이 브라우저에 자동 저장됩니다(localStorage). 다른 기기와 공유하려면 아래 내보내기·가져오기를 사용하세요.</p>
+        <div id="manageList" class="task-list all"></div>
+        <div class="manage-actions">
+          <button class="secondary-btn" id="exportBtn">내보내기 (JSON)</button>
+          <button class="secondary-btn" id="importBtn">가져오기 (JSON)</button>
+          <button class="secondary-btn" id="restoreBtn">기본 계획 복원</button>
+          <button class="danger-btn" id="resetBtn">전체 초기화</button>
+          <input type="file" id="importFile" accept="application/json" class="hidden">
+        </div>
+      </div>
+
+      <p class="foot-note">※ 일정은 학교 사정에 따라 변경될 수 있으며, 변경 시 학교 홈페이지 공지를 통해 확인하시기 바랍니다. 이 페이지의 데이터는 사용자가 직접 입력·수정한 내용이며 학교의 공식 발표를 대체하지 않습니다.</p>
+    </section>
+  </main>
+</div>
+
+<dialog id="taskDialog">
+  <form id="taskForm" method="dialog">
+    <div class="modal-head"><div><p class="card-label" id="modalKicker">NEW TASK</p><h2 id="modalTitle">일정 추가</h2></div><button type="button" class="close-btn" data-close>×</button></div>
+    <input type="hidden" id="taskId" />
+    <label>수행평가명<input id="taskTitle" required maxlength="80" placeholder="예: 책 대화하기 보고서 작성" /></label>
+    <div class="form-row">
+      <label>과목<input id="taskSubject" required maxlength="40" placeholder="예: 국어(문학)" /></label>
+      <label>학년<select id="taskGrade"><option value="">미지정</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option></select></label>
+    </div>
+    <div class="form-row">
+      <label>기준일<input id="taskDate" required type="date" /></label>
+      <label>교시·시간<input id="taskTime" maxlength="20" placeholder="예: 3교시" /></label>
+    </div>
+    <label class="check-row"><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="taskExact" style="width:15px;height:15px;padding:0;accent-color:var(--purple)"> 날짜가 확정된 일정 (기간으로 늘리지 않기)</span></label>
+    <label>시기 표기<input id="taskPeriod" maxlength="30" placeholder="예: 5월 중 / 4~6월 중 / 수시" /></label>
+    <div class="form-row">
+      <label>반영비율<input id="taskWeight" maxlength="10" placeholder="예: 20%" /></label>
+      <label>평가방법<input id="taskMethod" maxlength="40" placeholder="예: 서논술형" /></label>
+    </div>
+    <label>학기<select id="taskSemester"><option value="1">1학기</option><option value="2">2학기</option></select></label>
+    <label>메모<textarea id="taskMemo" rows="3" maxlength="200" placeholder="준비할 내용이나 제출 방법을 적어두세요."></textarea></label>
+    <div class="modal-actions"><button type="button" class="danger-btn hidden" id="deleteTaskBtn">삭제</button><span></span><button type="button" class="secondary-btn" data-close>취소</button><button class="primary-btn" type="submit">저장하기</button></div>
+  </form>
+</dialog>
+
+<dialog id="settingsDialog">
+  <form method="dialog" id="settingsForm">
+    <div class="modal-head"><div><p class="card-label">NOTIFICATION</p><h2>알림 설정</h2></div><button type="button" class="close-btn" data-close>×</button></div>
+    <div class="setting-row"><div><b>브라우저 알림</b><small id="permState">이 기기에서 마감 알림을 받아요.</small></div><button type="button" class="secondary-btn" id="permissionBtn">알림 허용</button></div>
+
+    <div class="form-row">
+      <label>알림 시작<select id="soonDays">
+        <option value="30">마감 30일 전부터</option><option value="14">마감 14일 전부터</option>
+        <option value="7">마감 7일 전부터</option><option value="3">마감 3일 전부터</option>
+        <option value="1">마감 하루 전부터</option>
+      </select></label>
+      <label>알림 방식<select id="notifyMode">
+        <option value="interval">일정 간격마다</option>
+        <option value="daily">하루 한 번 정해진 시각</option>
+        <option value="off">알림 끄기</option>
+      </select></label>
+    </div>
+
+    <div id="intervalRow">
+      <label>알림 간격</label>
+      <div class="form-row">
+        <input id="intervalValue" type="number" min="1" max="99" step="1" value="6" aria-label="간격 숫자">
+        <select id="intervalUnit"><option value="hour">시간마다</option><option value="day">일마다</option></select>
+      </div>
+    </div>
+    <label id="dailyRow">알림 시각<input type="time" id="dailyTime" value="18:00"></label>
+
+    <label class="check-row"><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="quietNight" style="width:15px;height:15px;padding:0;accent-color:var(--purple)"> 밤 10시~아침 7시에는 알리지 않기</span></label>
+
+    <p class="modal-help" id="notifySummary"></p>
+    <p class="perm-warn hidden" id="permWarn"></p>
+    <p class="modal-help">알림은 이 페이지가 열려 있는 동안 1분마다 조건을 확인해 발송됩니다. 브라우저 알림이 막혀 있으면 화면 오른쪽 아래 알림 카드로 대신 알려드립니다. 페이지를 닫아도 자동 발송하려면 배포 단계에서 푸시 알림 서버 연결이 필요합니다.</p>
+    <div class="modal-actions"><button type="button" class="secondary-btn" id="testNotify">테스트 알림</button><span></span><button class="primary-btn" type="submit">설정 저장</button></div>
+  </form>
+</dialog>
+
+<dialog id="listDialog">
+  <form method="dialog">
+    <div class="modal-head"><div><p class="card-label" id="listKicker">LIST</p><h2 id="listTitle">목록</h2></div><button type="button" class="close-btn" data-close>×</button></div>
+    <div id="listBody" class="dialog-list task-list all"></div>
+    <div class="modal-actions"><span></span><button class="secondary-btn" type="button" data-close>닫기</button></div>
+  </form>
+</dialog>
+
+<div id="alertPop" class="alert-pop" role="alert">
+  <button type="button" class="x" id="alertPopClose" aria-label="닫기">×</button>
+  <p class="card-label">DEADLINE</p>
+  <h4 id="alertPopTitle"></h4>
+  <ul id="alertPopList"></ul>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+(function () {
+  const STORAGE_KEY = 'ssh_tasks_v1';
+  const SETTINGS_KEY = 'ssh_settings_v1';
+  const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토'];
+  const COLORS = ['purple', 'green', 'orange', 'blue', 'pink'];
+
+  // 2026학년도 1학기 교수학습 및 평가계획(hwp)에서 추출한 실제 수행평가 데이터.
+  // 2학기 계획이 게시되면 아래 항목을 직접 수정/삭제/추가해서 최신화하세요.
+  function I(subject, title, period, date, weight, method) {
+    return { subject, title, period, date, approx: true, weight: weight || '', method: method || '', time: '', desc: '' };
+  }
+  const DEFAULT_ITEMS = [
+    // 국어
+    I('국어(공통국어1)', '인공지능을 활용한 책 대화하기', '4월 중', '2026-04-01', '10%', '서논술형·포트폴리오'),
+    I('국어(공통국어1)', '한 학기 한 권 읽기 - 성장한 나의 사고 쓰기', '5월 중', '2026-05-01', '15%', '서논술형'),
+    I('국어(공통국어1)', '책 대화하기 보고서 작성', '5월 중', '2026-05-01', '15%', '서논술형'),
+    I('국어(공통국어1)', '수업 중 질문과 답변', '상시', '2026-05-01', '10%', '구술평가'),
+    I('국어(문학)', '문학 작품 분석과 사유의 확장', '5월 중', '2026-05-01', '25%', '서논술형'),
+    I('국어(문학)', '문학 작품 비평과 관점 나눔', '5월 중', '2026-05-01', '20%', '서논술형'),
+    I('국어(독서와 작문)', '독서 포트폴리오·저자에게 질문하고 답하기', '4~5월 중', '2026-04-01', '15%', '논술형'),
+    I('국어(독서와 작문)', '책 대화 서평 쓰기', '5월 중', '2026-05-01', '15%', '논술형'),
+    I('국어(독서와 작문)', '구술 평가', '5월 중', '2026-05-01', '10%', '구술형'),
+    I('국어(독서와 작문)', '매체 자료 분석 보고서', '5~6월 중', '2026-05-01', '10%', '논술형'),
+    I('국어(화법과 작문)', '토론과 구술', '4~5월 중', '2026-04-01', '20%', '구술·논술형'),
+    I('국어(화법과 작문)', '연설문 작성', '5월 중', '2026-05-01', '10%', '논술형'),
+    I('국어(화법과 작문)', '연설', '5월 중', '2026-05-01', '10%', '말하기'),
+    I('국어(화법과 작문)', '소감문 작성', '6월 중', '2026-06-01', '10%', '서술형'),
+    I('국어(심화국어)', '문학과 심미적 사고', '4월 중', '2026-04-01', '30%', '서논술형'),
+    I('국어(심화국어)', '매체로 세상 읽기', '4~5월 중', '2026-04-01', '40%', '서논술형'),
+    I('국어(심화국어)', '정보분석과 논리적 사고', '6월 중', '2026-06-01', '30%', '서논술형'),
+
+    // 영어
+    I('영어(공통영어1)', '문제 해결 전략 영문 제안서 작성', '4월 중', '2026-04-01', '15%', '서논술형'),
+    I('영어(공통영어1)', '사회 인식 개선 국제 캠페인 홍보', '5월 중', '2026-05-01', '15%', '서논술형'),
+    I('영어(공통영어1)', '과정중심형 어휘활용활동', '4~6월(수시)', '2026-04-01', '10%', '말하기·포트폴리오'),
+    I('영어Ⅰ', '지문 심층 분석 영어 러닝로그 작성', '4~6월 중(2회)', '2026-04-01', '10%', '서논술형'),
+    I('영어Ⅰ', '텍스트 구조화 기반 설명·공유 활동', '4~6월 중(2회)', '2026-04-01', '20%', '서논술형·포트폴리오'),
+    I('영어Ⅰ', '설명 기반 학습 성찰적 분석 글쓰기', '6월 중', '2026-06-01', '10%', '말하기'),
+    I('영어 발표와 토론', '사회 현상 분석 영문보고서 작성', '4월 중', '2026-04-01', '20%', '서논술형'),
+    I('영어 발표와 토론', '소프트 파워 영향력 탐구 발표', '4월 중', '2026-04-01', '20%', '말하기'),
+    I('영어 발표와 토론', '현대 사회 쟁점 찬반 토론 활동', '6월 중', '2026-06-01', '10%', '말하기'),
+    I('영어 독해와 작문', '진로 분야 문제 탐색 글쓰기', '5월 중', '2026-05-01', '20%', '서논술형'),
+    I('영어 독해와 작문', '진로 기반 사회 기여 글쓰기', '6월 중', '2026-06-01', '20%', '서논술형'),
+    I('영어 독해와 작문', '어휘활용 포트폴리오', '수시', '2026-05-15', '10%', '서논술형'),
+    I('심화영어Ⅰ', '리딩저널 작성', '4월 중(5회)', '2026-04-01', '30%', '서논술형·포트폴리오'),
+    I('심화영어Ⅰ', '리딩저널 발표', '5월 중', '2026-05-01', '40%', '발표'),
+    I('심화영어Ⅰ', '영어원서 독후감 쓰기', '6월(수시)', '2026-06-01', '30%', '서논술형'),
+    I('진로 영어', '진로 영어 포트폴리오', '수시(10회)', '2026-05-01', '40%', '서논술형·포트폴리오'),
+    I('진로 영어', '진로 탐구 영문 보고서', '5월 중', '2026-05-01', '30%', '서논술형·보고서'),
+    I('진로 영어', '진로 심화 탐구 영어 발표', '6월 중', '2026-06-01', '30%', '발표'),
+
+    // 수학
+    I('수학(공통수학1)', '다항식 연산 오류 분석을 통한 수학적 검증', '5월 중', '2026-05-01', '13%', '서논술형'),
+    I('수학(공통수학1)', '대수·통계 기반 실생활 문제 설계', '5~6월 중', '2026-05-01', '21%', '서논술형'),
+    I('수학(공통수학1)', '확장적 사고 수학적 모델링 탐구', '5~6월(수시)', '2026-05-01', '16%', '보고서·구술발표'),
+    I('대수', '지수·로그함수 실생활 데이터 분석 및 서술', '4월 중', '2026-04-01', '20%', '서논술형'),
+    I('대수', '삼각함수 실생활 문제 제작 및 해결', '5월 중', '2026-05-01', '20%', '서술형'),
+    I('대수', '도서 연계 심화 주제 탐구 프로젝트', '6월(수시)', '2026-06-01', '10%', '보고서·프로젝트'),
+    I('기하', '이차곡선의 방정식 분석하기', '5월 중', '2026-05-01', '21%', '서논술형'),
+    I('기하', '이차곡선과 공간도형 개념기반 문제해결', '5~6월 중', '2026-05-01', '10%', '서술형'),
+    I('기하', '기하학적 탐구와 모델링 발표', '6월 중', '2026-06-01', '9%', '보고서·구술발표'),
+    I('미적분Ⅰ', '극한개념기반 문제 해결 및 그래프분석', '4~6월(2회)', '2026-04-01', '26%', '서술형'),
+    I('미적분Ⅰ', '미분마인드맵·러닝로그 포트폴리오', '4~6월(수시)', '2026-04-01', '14%', '포트폴리오'),
+    I('확률과통계', '과정중심 문제해결', '5~6월 중', '2026-05-01', '20%', '서논술형'),
+    I('확률과통계', '핵심 개념 구조화', '5~6월 중', '2026-05-01', '20%', '서논술형'),
+    I('확률과통계', '수학적 사고 전개 보고서', '5~6월 중', '2026-05-01', '10%', '보고서'),
+
+    // 사회탐구
+    I('한국사', '주간 한국사 성장 노트', '4~6월(수시)', '2026-04-01', '10%', '포트폴리오'),
+    I('한국사', '나만의 한국사 쟁점 탐구 보고서', '5월 중', '2026-05-01', '20%', '서논술형·보고서'),
+    I('한국사', '나만의 한국사 쟁점 논술하기', '6월 중', '2026-06-01', '20%', '서논술형'),
+    I('통합사회1', '통합적 사고를 통한 질문 만들기', '5월 중', '2026-05-01', '20%', '서논술형'),
+    I('통합사회1', '통합적 사고 기반 질문 해답 탐구하기', '5월 중', '2026-05-01', '20%', '서논술형'),
+    I('세계사', '역사 인물 가상 인터뷰', '4월 중', '2026-04-01', '20%', '구술·서논술형'),
+    I('세계사', '다각적 접근을 통한 세계사 비평', '5월 중', '2026-05-01', '20%', '서논술형'),
+    I('법과사회', '법적 이슈에 따른 입법 청원하기', '5월 중', '2026-05-01', '20%', '서논술형'),
+    I('법과사회', '현대사회 속 법률 브리핑하기', '6월 중', '2026-06-01', '20%', '구술·발표'),
+    I('동아시아사', '역사 논술', '6월 중', '2026-06-01', '30%', '서논술형'),
+    I('동아시아사', '역사 탐구 활동(포트폴리오)', '5월 중', '2026-05-01', '10%', '서논술형'),
+    I('동아시아사', '교과 내용 정리 포트폴리오', '4~7월(수시)', '2026-04-01', '10%', '포트폴리오'),
+    I('사회문화', '주제 탐구 활동지 작성', '4월 중', '2026-04-01', '10%', '서술형'),
+    I('사회문화', '주제 발표', '4~5월 중', '2026-04-01', '20%', '발표'),
+    I('사회문화', '자유주제 탐구 논술', '6월 중', '2026-06-01', '20%', '논술형'),
+    I('생활과윤리', '직업윤리 탐구보고서 작성 및 발표', '5~6월 중', '2026-05-01', '10%', '발표·보고서'),
+    I('생활과윤리', '윤리티콘 제작', '4~6월(수시)', '2026-04-01', '15%', '서논술형·발표'),
+    I('생활과윤리', '윤리 성찰 에세이 작성', '6월 중', '2026-06-01', '15%', '포트폴리오·관찰면접'),
+    I('세계지리', '지리적 사고를 통한 질문 만들기', '5~6월 중', '2026-05-01', '15%', '서논술형'),
+    I('세계지리', '지리적 사고 기반 질문 해답 탐구', '5~6월 중', '2026-05-01', '15%', '서논술형'),
+    I('세계지리', '지리적 사고 기반 심화 질문 및 해답 탐구', '5~6월 중', '2026-05-01', '20%', '서논술형'),
+    I('국제경제', '국제 경제 이슈 브리핑', '4월 중', '2026-04-01', '30%', '구술·발표'),
+    I('국제경제', '환율의 결정 원리와 변동 알아보기', '5월 중', '2026-05-01', '30%', '서논술형'),
+    I('국제경제', '금융의 세계화 및 금융시장 개방 서술', '5~6월 중', '2026-05-01', '40%', '서논술형'),
+    I('사회탐구방법', '탐구 활동 계획서 작성', '4~6월(4회)', '2026-04-01', '40%', '서술형'),
+    I('사회탐구방법', '자유 주제 탐구 논술', '6월 중', '2026-06-01', '40%', '논술형'),
+    I('사회탐구방법', '주제 발표', '5월 중', '2026-05-01', '20%', '발표'),
+
+    // 과학탐구
+    I('통합과학1', '과학 스피치(과학적 의사소통)', '4~6월 중', '2026-04-01', '20%', '서논술형'),
+    I('통합과학1', '융합과학 활용 역학적 에너지 장치 설계 탐구', '4~6월 중', '2026-04-01', '20%', '서논술형'),
+    I('통합과학1', '세상을 이루는 시스템 과학적 시각 글쓰기', '4~6월(수시)', '2026-04-01', '10%', '서논술형'),
+    I('과학탐구실험1', '원소의 질서를 읽는 주기율표 설계 프로젝트', '4월 중', '2026-04-01', '50%', '서논술형·보고서·토의토론'),
+    I('과학탐구실험1', '과학독서 기반 질문 중심 탐구', '5~7월 중', '2026-05-01', '50%', '서논술형·보고서'),
+    I('물리학', '등가속도 운동의 특성 탐구', '4월 중', '2026-04-01', '20%', '서논술형·보고서'),
+    I('물리학', '실생활 물리 현상 탐구 프로젝트 발표', '6월 중', '2026-06-01', '20%', '구술·발표·관찰면접'),
+    I('지구과학', '일기기호 분석을 통한 일기도 작성', '4월 중', '2026-04-01', '20%', '실험·실습'),
+    I('지구과학', 'H-R도 작성 - 별의 진화 과정 분석', '5~6월 중', '2026-05-01', '20%', '서논술형'),
+    I('물리학Ⅱ', '주제탐구보고서', '4~5월 중', '2026-04-01', '30%', '보고서'),
+    I('물리학Ⅱ', '주제탐구발표', '5~6월 중', '2026-05-01', '30%', '구술·발표'),
+    I('물리학Ⅱ', '서술형평가', '5~6월 중', '2026-05-01', '40%', '서논술형'),
+    I('화학Ⅱ', '주제 탐구 프로젝트', '수시(5월)', '2026-05-01', '40%', '보고서·프로젝트·구술발표'),
+    I('화학Ⅱ', '실험 수행 및 보고서', '4월 중', '2026-04-01', '30%', '실험실습·서논술형·보고서'),
+    I('화학Ⅱ', '독서 연계 화학 글쓰기', '6월 중', '2026-06-01', '30%', '서논술형·보고서'),
+    I('생명과학Ⅱ', '생명 현상을 읽는 과학적 개념 통찰', '4월 중', '2026-04-01', '30%', '서논술형·포트폴리오·보고서'),
+    I('생명과학Ⅱ', '생명 현상을 해석하는 과학 스피치', '5월 중', '2026-05-01', '30%', '구술·발표'),
+    I('생명과학Ⅱ', '생명 시스템을 확장하는 연구 리포트', '6월 중', '2026-06-01', '40%', '서논술형·보고서'),
+    I('지구과학Ⅱ', '탐구 과정 평가', '4~5월 중', '2026-04-01', '40%', '실험·실습'),
+    I('지구과학Ⅱ', '탐구 보고서', '4~5월 중', '2026-04-01', '30%', '서논술형·보고서'),
+    I('지구과학Ⅱ', '심화 주제 발표', '4~6월 중', '2026-04-01', '30%', '구술·발표'),
+
+    // 예체능
+    I('음악', '발성 원리 이해 - 교가의 음악적 표현과 해석', '4월 중', '2026-04-01', '20%', '발표'),
+    I('음악', '뮤지컬 극적 기능 분석 - 장면 창작 프로젝트', '4~5월 중(2회)', '2026-04-01', '40%', '서논술·포트폴리오·발표'),
+    I('음악', '음악 이슈 분석 보고서 제작', '6~7월 중(2회)', '2026-06-01', '40%', '서논술·보고서·토의토론'),
+    I('음악 감상과 비평', '1970년대 디스코 음악 감상 비평', '4~5월 중', '2026-04-01', '50%', '서논술형'),
+    I('음악 감상과 비평', '현대 EDM 감상 비평', '5~6월 중', '2026-05-01', '50%', '서논술형'),
+    I('미술', '학교 매거진 편집 디자인 프로젝트', '4월 중', '2026-04-01', '30%', '프로젝트·포트폴리오'),
+    I('미술', '디지털 산수화 제작', '5월 중', '2026-05-01', '40%', '실험실습·포트폴리오'),
+    I('미술', '공공미술 비평 보고서 작성', '6월 중', '2026-06-01', '30%', '서술논술·보고서·토의토론'),
+    I('미술 감상과 비평', '레디메이드 비판적 감상 비평문 작성', '4월 중', '2026-04-01', '50%', '서술논술·보고서·토의토론'),
+    I('미술 감상과 비평', '모의 미술 경매 - 작품 가치 판단 감상 비평', '5~6월 중', '2026-05-01', '50%', '서술논술·구술발표'),
+    I('체육1', '플랭크를 통한 건강 관리 실천', '4월 중', '2026-04-01', '40%', '실습'),
+    I('체육1', '농구 스킬 챌린지(전략형 스포츠)', '4~5월 중', '2026-04-01', '30%', '실습'),
+    I('체육1', '다트(생태형 스포츠 전술 적용)', '6~7월 중', '2026-06-01', '30%', '실습'),
+    I('스포츠 문화', '스포츠 인문·경기문화 탐구 보고서', '4~5월 중', '2026-04-01', '30%', '서술논술·보고서'),
+    I('스포츠 문화', '구기 종목 심판법 이해', '5~6월 중', '2026-05-01', '20%', '구술·발표'),
+    I('스포츠 문화', '농구 슈팅 기술 습득 실기', '5~7월 중', '2026-05-01', '50%', '실기평가'),
+    I('운동과 건강', '플라잉디스크 골프 실기', '4월 중', '2026-04-01', '30%', '실기평가'),
+    I('운동과 건강', '건강 증진 프로그램 개발', '4~5월 중', '2026-04-01', '30%', '서술논술·보고서'),
+    I('운동과 건강', '50M 달리기 실기', '6~7월 중', '2026-06-01', '30%', '실기평가'),
+    I('운동과 건강', '학습관찰(체크리스트)', '수시', '2026-05-15', '10%', '체크리스트'),
+
+    // 생활교양 (정보 · 일본어 · 한문 · 기술가정)
+    I('정보', '데이터 분석 및 시각화', '4월 중', '2026-04-01', '15%', '서논술형·보고서'),
+    I('정보', '문제 해결 프로그램 설계 및 구현', '5월 중', '2026-05-01', '30%', '포트폴리오·프로젝트'),
+    I('정보', '디지털 기술 기반 진로 글쓰기', '6월(수시)', '2026-06-01', '15%', '서논술형'),
+    I('인공지능 기초', '인공지능의 사회적 영향 탐구', '4~5월 중', '2026-04-01', '30%', '서논술형·보고서'),
+    I('인공지능 기초', '탐색 알고리즘 분석', '5월 중', '2026-05-01', '30%', '서논술형·보고서'),
+    I('인공지능 기초', '기계학습 모델 활용 문제 해결 프로젝트', '6월 중', '2026-06-01', '40%', '프로젝트·보고서'),
+    I('일본어', '가나 단어 퍼즐 맞추기', '4월 중', '2026-04-01', '10%', '프로젝트'),
+    I('일본어', '한·일 상호문화 이해 팸플릿 만들기', '5월 중(3회)', '2026-05-01', '20%', '프로젝트'),
+    I('일본어', '일상생활 표현 일본어 말하기', '6월 중', '2026-06-01', '20%', '구술'),
+    I('일본어 회화', '의사소통 기본 표현 쓰기', '4월(3회)', '2026-04-01', '30%', '쓰기'),
+    I('일본어 회화', '상황과 주제에 맞게 말하기', '5월(3회)', '2026-05-01', '30%', '말하기'),
+    I('일본어 회화', '일본 전통문화 탐구 발표', '6월(2회)', '2026-06-01', '40%', '발표'),
+    I('기술·가정', '소비와 생활복지·인간관계 서논술형 글쓰기', '4월 중', '2026-04-01', '25%', '서논술형'),
+    I('기술·가정', '미래 공학 혁신 주제 탐구 발표', '4~6월 중', '2026-04-01', '10%', '발표'),
+    I('기술·가정', 'AI 융합 기술·지속가능 공학 문제해결', '5~7월 중', '2026-05-01', '25%', '프로젝트'),
+    I('한문', '한문 명문 분석 - 삶과 연결하기', '5월 중', '2026-05-01', '20%', '서논술형'),
+    I('한문', '한자 생성 원리 창의적 표현', '4월 중', '2026-04-01', '20%', '실기'),
+    I('한문', '한문 학습장 작성하기', '6월 중', '2026-06-01', '10%', '포트폴리오'),
+    I('융합 탐구(정보과제연구 등)', '주제 탐구 보고서 작성하기', '4~5월 중', '2026-04-01', '', '보고서'),
+    I('융합 탐구(정보과제연구 등)', '주제 탐구 발표하기', '5~6월 중', '2026-05-01', '', '발표'),
+    I('논리학', '논리학 탐구 보고서', '4~5월 중', '2026-04-01', '', '보고서'),
+    I('논리학', '논리학 주제 발표', '5~6월 중', '2026-05-01', '', '발표'),
+  ];
+
+  /* ---------- 상태 ---------- */
+  function loadItems() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return DEFAULT_ITEMS.slice();
+  }
+  function saveItems() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      toast('브라우저 저장 공간이 가득 찼어요. 일부 일정을 정리해 주세요.');
+    }
+  }
+
+  const DEFAULT_SETTINGS = {
+    soonDays: 7,            // 마감 며칠 전부터 알림 대상으로 볼지
+    mode: 'interval',       // interval | daily | off
+    intervalValue: 6,       // 간격 숫자
+    intervalUnit: 'hour',   // hour | day
+    dailyTime: '18:00',     // 하루 한 번 모드의 알림 시각
+    quietNight: true,       // 밤 10시~아침 7시 알림 끄기
+    lastNotifiedAt: ''      // 마지막으로 알린 시각(ISO)
+  };
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (raw) return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(raw));
+    } catch (e) {}
+    return Object.assign({}, DEFAULT_SETTINGS);
+  }
+  function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+  let items = loadItems();
+  let settings = loadSettings();
+  let calendarCursor = null;
+  let weekMonth = null;
+  let weekIndex = -1;   // -1이면 그 달의 모든 주차를 보여줍니다
+  let lastList = [];
+  let cdTimer = null;
+
+  const $ = id => document.getElementById(id);
+
+  function todayStart() {
+    const n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  }
+  function iso(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function colorOf(subject) {
+    let h = 0;
+    for (let i = 0; i < (subject || '').length; i++) h = (h * 31 + subject.charCodeAt(i)) % 9973;
+    return COLORS[h % COLORS.length];
+  }
+
+  // 학교 홈페이지(교수학습센터) 게시글에는 학년 표기가 없고 HWP 첨부 안에만 있습니다.
+  // 대신 2026학년도는 고1·고2가 2022 개정, 고3이 2015 개정 교육과정이라 과목 '명칭'이 학년을 가릅니다.
+  //  - 2022 개정 공통과목(공통국어1 등)      → 1학년
+  //  - 2022 개정에만 있는 선택과목(대수 등)   → 2학년 (고3은 2015 개정이라 개설 불가)
+  //  - 2015 개정에만 있는 과목(화법과 작문 등) → 3학년
+  //  - 두 교육과정에 같은 이름으로 있는 과목   → 추정(true가 아님)으로 표시하고 직접 확인 권장
+  const GRADE_MAP = {
+    '국어(공통국어1)': ['1', true], '국어(문학)': ['2', false], '국어(독서와 작문)': ['2', true],
+    '국어(화법과 작문)': ['3', true], '국어(심화국어)': ['3', true],
+    '영어(공통영어1)': ['1', true], '영어Ⅰ': ['2', false], '영어 발표와 토론': ['2', true],
+    '영어 독해와 작문': ['2', false], '심화영어Ⅰ': ['3', true], '진로 영어': ['3', true],
+    '수학(공통수학1)': ['1', true], '대수': ['2', true], '미적분Ⅰ': ['2', true],
+    '기하': ['2', false], '확률과통계': ['2', false],
+    '한국사': ['1', true], '통합사회1': ['1', true], '세계사': ['2', false], '법과사회': ['2', true],
+    '동아시아사': ['3', true], '사회문화': ['3', true], '생활과윤리': ['3', true], '세계지리': ['3', true],
+    '국제경제': ['3', true], '사회탐구방법': ['3', true],
+    '통합과학1': ['1', true], '과학탐구실험1': ['1', true], '물리학': ['2', true], '지구과학': ['2', true],
+    '물리학Ⅱ': ['3', true], '화학Ⅱ': ['3', true], '생명과학Ⅱ': ['3', true], '지구과학Ⅱ': ['3', true],
+    '음악': ['2', false], '음악 감상과 비평': ['2', false], '미술': ['2', false], '미술 감상과 비평': ['2', false],
+    '체육1': ['1', false], '스포츠 문화': ['2', false], '운동과 건강': ['2', false],
+    '정보': ['2', false], '인공지능 기초': ['2', false], '일본어': ['2', true], '일본어 회화': ['2', false],
+    '기술·가정': ['2', false], '한문': ['2', true],
+    '융합 탐구(정보과제연구 등)': ['3', false], '논리학': ['3', false]
+  };
+  const GRADE1_KEYS = ['공통국어', '공통영어', '공통수학', '통합사회', '통합과학', '과학탐구실험', '한국사'];
+
+  function gradeInfo(it) {
+    if (it.grade) return { grade: String(it.grade), sure: true };          // 사용자가 직접 지정한 값이 최우선
+    const mapped = GRADE_MAP[it.subject];
+    if (mapped) return { grade: mapped[0], sure: mapped[1] };
+    if (GRADE1_KEYS.some(k => (it.subject || '').includes(k))) return { grade: '1', sure: false };
+    return { grade: '', sure: false };
+  }
+  function gradeOf(it) { return gradeInfo(it).grade; }
+
+  // 학기별 대략적인 진행 기간 (수시·상시 평가가 언제까지 이어지는지 표기할 때 사용)
+  const SEMESTERS = {
+    '1': { label: '1학기', text: '3월~7월', from: [2, 2], to: [6, 31], sameYear: true },
+    '2': { label: '2학기', text: '8월~다음해 2월', from: [7, 16], to: [1, 15], sameYear: false }
+  };
+  function semesterOf(it) { return SEMESTERS[String(it.semester || '1')] ? String(it.semester || '1') : '1'; }
+  function semesterRange(key, year) {
+    const s = SEMESTERS[key];
+    return { start: new Date(year, s.from[0], s.from[1]), end: new Date(year + (s.sameYear ? 0 : 1), s.to[0], s.to[1]) };
+  }
+
+  // '4~5월 중', '4~6월(수시)', '5월 중(3회)' 같은 표기를 여러 날에 걸친 기간으로 바꿉니다.
+  // 날짜가 확정된 일정(approx=false)이나 '8월 2일'처럼 일자까지 적힌 표기는 하루짜리로 둡니다.
+  function parseSpan(period, baseDate, approx) {
+    const single = { start: baseDate, end: baseDate, single: true, ongoing: false };
+    if (!approx) return single;
+    const p = period || '';
+    if (/\d{1,2}\s*월\s*\d{1,2}\s*일/.test(p) || /\d{1,2}\s*\/\s*\d{1,2}/.test(p)) return single;
+
+    const months = [];
+    const range = p.match(/(\d{1,2})\s*[~\-–]\s*(\d{1,2})\s*월/);
+    if (range) months.push(Number(range[1]), Number(range[2]));
+    let m; const re = /(\d{1,2})\s*월/g;
+    while ((m = re.exec(p))) months.push(Number(m[1]));
+    const valid = months.filter(n => n >= 1 && n <= 12);
+    if (!valid.length) {
+      // 월 표기가 없는 '수시'·'상시'는 해당 학기 내내 이어지는 일정입니다.
+      if (/수시|상시/.test(p)) return { start: baseDate, end: baseDate, single: true, ongoing: true };
+      return single;
+    }
+    const year = baseDate.getFullYear();
+    const lo = Math.min.apply(null, valid), hi = Math.max.apply(null, valid);
+    return { start: new Date(year, lo - 1, 1), end: new Date(year, hi, 0), single: false, ongoing: false };
+  }
+
+  function fmtMD(d) { return (d.getMonth() + 1) + '.' + d.getDate(); }
+
+  function enrich() {
+    const today = todayStart();
+    return items.map((it, idx) => {
+      const base = new Date((it.date || '') + 'T00:00:00');
+      if (isNaN(base.getTime())) return null;
+      const span = parseSpan(it.period, base, it.approx !== false);
+      const semKey = semesterOf(it);
+      const sem = SEMESTERS[semKey];
+      const semSpan = semesterRange(semKey, base.getFullYear());
+      const start = span.ongoing ? semSpan.start : span.start;
+      const end = span.ongoing ? semSpan.end : span.end;
+      const dStart = Math.round((start - today) / 86400000);
+      const dEnd = Math.round((end - today) / 86400000);
+      const ongoing = span.ongoing;
+      const past = !ongoing && dEnd < 0;
+      const active = !ongoing && dStart <= 0 && dEnd >= 0;
+      const soon = !ongoing && !past && dEnd <= settings.soonDays;
+      const dateText = (start.getMonth() + 1) + '월 ' + start.getDate() + '일 (' + WEEKDAY[start.getDay()] + ')';
+      const semText = sem.label + '(' + sem.text + ') 내내';
+      const gi = gradeInfo(it);
+      return {
+        ...it, idx, d: start, start, end, single: span.single, ongoing,
+        dStart, dEnd, past, soon, active,
+        semKey, semLabel: sem.label, semText,
+        grade: gi.grade, gradeSure: gi.sure,
+        color: colorOf(it.subject),
+        when: ongoing
+          ? (it.period || '수시') + ' · ' + semText + ' (' + fmtMD(start) + '~' + fmtMD(end) + ')'
+          : (span.single
+            ? (it.approx !== false && it.period ? it.period + ' (' + fmtMD(start) + ')' : dateText)
+            : (it.period || '') + ' (' + fmtMD(start) + '~' + fmtMD(end) + ')'),
+        badge: ongoing ? (sem.label + ' 상시') : (past ? '종료' : (active ? '진행 중' : (dStart === 0 ? 'D-DAY' : 'D-' + dStart)))
+      };
+    }).filter(Boolean).sort((a, b) => (a.ongoing - b.ongoing) || (a.start - b.start) || (a.end - b.end));
+  }
+
+  function gradeLabel(g, sure) { return g ? (g + '학년' + (sure === false ? '(추정)' : '')) : '학년 미지정'; }
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function metaLine(it) {
+    return [it.when, it.time, it.weight, it.method, it.desc].filter(Boolean).map(escapeHtml).join(' · ');
+  }
+
+  function taskItem(it, opts) {
+    opts = opts || {};
+    return `<article class="task-item${it.past ? ' past' : ''}" data-idx="${it.idx}">
+      <span class="subject-dot ${it.color}"></span>
+      <div class="task-info"><b>${escapeHtml(it.title || '(제목 없음)')}</b><small>${escapeHtml(it.subject || '미분류')} · ${escapeHtml(gradeLabel(it.grade, it.gradeSure))} · ${metaLine(it)}</small></div>
+      ${opts.pill ? `<span class="pill">${escapeHtml(it.weight || '비율 미정')}</span>` : ''}
+      <span class="dday${it.past ? ' past' : (it.soon ? ' urgent' : '')}">${it.badge}</span>
+      <button class="task-menu" data-edit="${it.idx}" aria-label="수정">⋯</button>
+    </article>`;
+  }
+
+  /* ---------- 렌더 ---------- */
+  function render() {
+    // 학년 선택은 모든 화면에 함께 적용됩니다.
+    const gradeSel = $('globalGrade').value;
+    const list = enrich().filter(it => gradeSel === 'all' || (gradeSel === 'none' ? !it.grade : it.grade === gradeSel));
+    const upcoming = list.filter(it => !it.past);
+
+    const now = new Date();
+    $('todayLabel').textContent = now.getFullYear() + '년 ' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일 ' + WEEKDAY[now.getDay()] + '요일';
+
+    const soonItems = list.filter(it => it.soon);
+    $('alertDot').className = soonItems.length ? 'on' : '';
+
+    /* 대시보드 */
+    const next = upcoming[0];
+    if (next) {
+      $('nearestTitle').textContent = next.title;
+      $('nearestMeta').textContent = [next.subject, gradeLabel(next.grade, next.gradeSure), next.when, next.weight, next.method].filter(Boolean).join(' · ');
+      $('nearestDday').textContent = next.badge;
+      $('nearestDday').style.fontSize = /^D-/.test(next.badge) ? '26px' : '18px';
+      $('nearestNote').textContent = next.ongoing ? '상시 평가' : (next.active ? '마감 D-' + next.dEnd : '남았어요');
+      startCountdown(next.end);
+    } else {
+      $('nearestTitle').textContent = '예정된 수행평가가 없어요';
+      $('nearestMeta').textContent = '일정 관리에서 수행평가를 추가해 보세요.';
+      $('nearestDday').textContent = '–';
+      if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+    }
+    $('soonLabel').textContent = settings.soonDays + '일 이내 마감';
+    $('weekCount').textContent = soonItems.length;
+    $('openCount').textContent = upcoming.length;
+    $('doneCount').textContent = list.length - upcoming.length;
+
+    fillSubjects(list);
+
+    const dashSubject = $('dashboardSubject').value;
+    const dashList = upcoming.filter(it => dashSubject === 'all' || it.subject === dashSubject).slice(0, 8);
+    $('upcomingList').innerHTML = dashList.length
+      ? dashList.map(it => taskItem(it)).join('')
+      : '<div class="empty">다가오는 수행평가가 없어요.</div>';
+
+    renderMiniWeek(list);
+
+    /* 전체 일정 */
+    const q = $('searchInput').value.trim().toLowerCase();
+    const subj = $('subjectFilter').value;
+    const showPast = $('showPast').checked;
+    const filtered = list.filter(it =>
+      (showPast || !it.past) &&
+      (subj === 'all' || it.subject === subj) &&
+      (!q || (it.title + ' ' + it.subject + ' ' + (it.method || '')).toLowerCase().includes(q))
+    );
+    const gradeText = gradeSel === 'all' ? '' : ' · ' + (gradeSel === 'none' ? '학년 미지정' : gradeSel + '학년');
+    $('totalCount').textContent = '총 ' + filtered.length + '건' + gradeText + ' · 임박 ' + soonItems.length + '건';
+    $('allTaskList').innerHTML = filtered.length
+      ? filtered.map(it => taskItem(it, { pill: true })).join('')
+      : '<div class="empty">조건에 맞는 수행평가가 없어요.</div>';
+
+    /* 일정 관리 */
+    const mSubj = $('manageSubject').value;
+    const managed = list.filter(it => mSubj === 'all' || it.subject === mSubj);
+    $('manageList').innerHTML = managed.length
+      ? managed.map(it => taskItem(it, { pill: true })).join('')
+      : '<div class="empty">등록된 일정이 없어요. 위의 “일정 추가”를 눌러 시작하세요.</div>';
+
+    lastList = list;
+    renderMonth(list);
+    renderWeekPlan(list);
+    maybeNotify();
+  }
+
+  function fillSubjects(list) {
+    const subjects = Array.from(new Set(list.map(it => it.subject).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ko'));
+    ['dashboardSubject', 'subjectFilter', 'manageSubject'].forEach(id => {
+      const el = $(id);
+      const prev = el.value;
+      el.innerHTML = '<option value="all">모든 과목</option>' + subjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+      el.value = subjects.includes(prev) ? prev : 'all';
+    });
+  }
+
+  function renderMiniWeek(list) {
+    const today = todayStart();
+    const start = new Date(today);
+    start.setDate(today.getDate() - today.getDay());
+    let html = '';
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const has = list.some(it => !it.ongoing && it.start <= d && d <= it.end);
+      html += `<div class="day-cell${iso(d) === iso(today) ? ' today' : ''}${has ? ' has-task' : ''}"><small>${WEEKDAY[i]}</small><b>${d.getDate()}</b></div>`;
+    }
+    $('miniWeek').innerHTML = html;
+  }
+
+  function addDays(d, n) { const r = new Date(d); r.setDate(d.getDate() + n); return r; }
+  function overlaps(it, from, to) { return !it.ongoing && it.end >= from && it.start <= to; }
+
+  function ongoingStrip(list, target) {
+    const on = list.filter(it => it.ongoing);
+    if (!on.length) {
+      $(target).innerHTML = '<b>수시·상시</b> 학기 내내 진행되는 평가가 없어요.';
+      return;
+    }
+    // 학기별로 묶어서 "이 평가는 N학기 동안만 이어진다"는 점을 분명히 표시합니다.
+    const groups = {};
+    on.forEach(it => { (groups[it.semKey] = groups[it.semKey] || []).push(it); });
+    $(target).innerHTML = Object.keys(groups).sort().map(key => {
+      const g = groups[key];
+      const s = SEMESTERS[key];
+      return `<b>수시·상시 · ${s.label}(${s.text}) 동안만 진행</b>` + g.map(it =>
+        `<button type="button" class="chip tone-${it.color}" data-edit="${it.idx}" title="${escapeHtml(it.subject + ' · ' + it.title + ' — ' + it.semText)}">${escapeHtml(it.subject)} · ${escapeHtml(it.title)}</button>`
+      ).join('');
+    }).join(' ');
+  }
+
+  const MAX_LANES = 3;
+
+  function renderMonth(list) {
+    if (!calendarCursor) {
+      const base = list.find(it => !it.past && !it.ongoing) || list[0];
+      const t = todayStart();
+      calendarCursor = base ? new Date(base.start.getFullYear(), base.start.getMonth(), 1) : new Date(t.getFullYear(), t.getMonth(), 1);
+    }
+    const y = calendarCursor.getFullYear(), m = calendarCursor.getMonth();
+    $('calendarMonth').textContent = y + '년 ' + (m + 1) + '월';
+    ongoingStrip(list, 'monthOngoing');
+
+    const first = new Date(y, m, 1);
+    const last = new Date(y, m + 1, 0);
+    const gridStart = addDays(first, -first.getDay());
+    const todayKey = iso(todayStart());
+    let html = '';
+
+    for (let w = 0; w < 6; w++) {
+      const wStart = addDays(gridStart, w * 7);
+      const wEnd = addDays(wStart, 6);
+      if (wStart > last) break;
+
+      let days = '';
+      for (let i = 0; i < 7; i++) {
+        const d = addDays(wStart, i);
+        days += `<div class="cal-daynum${d.getMonth() !== m ? ' other' : ''}${iso(d) === todayKey ? ' today' : ''}"><span>${d.getDate()}</span></div>`;
+      }
+
+      const evs = list.filter(it => overlaps(it, wStart, wEnd))
+        .sort((a, b) => (a.start - b.start) || ((b.end - b.start) - (a.end - a.start)));
+      const lanes = [];
+      let bars = '', hidden = 0;
+      evs.forEach(it => {
+        const from = Math.max(0, Math.round((it.start - wStart) / 86400000));
+        const to = Math.min(6, Math.round((it.end - wStart) / 86400000));
+        let lane = lanes.findIndex(endCol => endCol < from);
+        if (lane === -1) { lane = lanes.length; lanes.push(-1); }
+        lanes[lane] = to;
+        if (lane >= MAX_LANES) { hidden++; return; }
+        const head = it.start < wStart, tail = it.end > wEnd;
+        const edge = head && tail ? ' mid' : (head ? ' tail' : (tail ? ' head' : ''));
+        bars += `<div class="cal-bar tone-${it.color}${edge}" style="grid-row:${lane + 1};grid-column:${from + 1}/span ${to - from + 1}" data-edit="${it.idx}" title="${escapeHtml(it.subject + ' · ' + it.title + ' (' + it.when + ')')}">${head ? '↳ ' : ''}${escapeHtml(it.subject)} · ${escapeHtml(it.title)}</div>`;
+      });
+      if (evs.length) {
+        bars += `<button type="button" class="cal-more" style="grid-row:${MAX_LANES + 1};grid-column:1/-1" data-week="${iso(wStart)}">${hidden ? '+' + hidden + '건 더 보기' : '이 주 일정 모두 보기 (' + evs.length + '건)'}</button>`;
+      }
+
+      html += `<div class="cal-week"><div class="cal-week-days">${days}</div><div class="cal-lanes">${bars}</div></div>`;
+    }
+    $('monthGrid').innerHTML = html;
+  }
+
+  // 한 달을 주차로 나눕니다. 각 주는 일요일 시작이며, 그 달의 날이 하루라도 포함된 주만 셉니다.
+  function weeksOfMonth(y, m) {
+    const first = new Date(y, m, 1), last = new Date(y, m + 1, 0);
+    const weeks = [];
+    let cur = addDays(first, -first.getDay());
+    while (cur <= last) { weeks.push(new Date(cur)); cur = addDays(cur, 7); }
+    return weeks;
+  }
+  function weekIndexOf(date) {
+    const weeks = weeksOfMonth(date.getFullYear(), date.getMonth());
+    const sunday = addDays(date, -date.getDay());
+    const found = weeks.findIndex(w => iso(w) === iso(sunday));
+    return found === -1 ? 0 : found;
+  }
+
+  // 한 달을 1주차~N주차로 나눠 각 주차의 계획을 카드로 관리합니다.
+  function renderWeekPlan(list) {
+    if (!weekMonth) {
+      const t = todayStart();
+      const base = list.some(it => !it.ongoing && it.start <= t && t <= it.end)
+        ? t
+        : ((list.find(it => !it.past && !it.ongoing) || list.find(it => !it.ongoing) || {}).start || t);
+      weekMonth = new Date(base.getFullYear(), base.getMonth(), 1);
+    }
+    const y = weekMonth.getFullYear(), m = weekMonth.getMonth();
+    const weeks = weeksOfMonth(y, m);
+    if (weekIndex >= weeks.length) weekIndex = -1;
+
+    const monthFirst = new Date(y, m, 1), monthLast = new Date(y, m + 1, 0);
+    const today = todayStart();
+    const nowWeek = (today >= monthFirst && today <= monthLast) ? weekIndexOf(today) : -1;
+
+    $('weekLabel').textContent = y + '년 ' + (m + 1) + '월' + (weekIndex >= 0 ? ' ' + (weekIndex + 1) + '주차' : ' 주차별 계획');
+
+    const weekData = weeks.map((w, i) => {
+      const wEnd = addDays(w, 6);
+      const from = w < monthFirst ? monthFirst : w;
+      const to = wEnd > monthLast ? monthLast : wEnd;
+      return { i, start: w, end: wEnd, from, to, items: list.filter(it => overlaps(it, w, wEnd)) };
+    });
+
+    // 주차 탭 — '전체'와 각 주차를 오가며 볼 수 있습니다.
+    $('weekTabs').innerHTML =
+      `<button type="button" class="week-tab${weekIndex < 0 ? ' active' : ''}" data-week-index="-1">전체 주차<small>${weeks.length}개 주 · ${list.filter(it => overlaps(it, monthFirst, monthLast)).length}건</small></button>` +
+      weekData.map(w => `<button type="button" class="week-tab${w.i === weekIndex ? ' active' : ''}" data-week-index="${w.i}">
+        ${w.i + 1}주차${w.i === nowWeek ? ' · 이번 주' : ''}<small>${w.from.getMonth() + 1}/${w.from.getDate()}~${w.to.getMonth() + 1}/${w.to.getDate()} · ${w.items.length}건</small>
+      </button>`).join('');
+
+    ongoingStrip(list, 'weekOngoing');
+
+    const shown = weekIndex < 0 ? weekData : [weekData[weekIndex]];
+    $('weekPlan').innerHTML = shown.map(w => {
+      const addDate = (today >= w.start && today <= w.end) ? today : (w.from < monthFirst ? monthFirst : w.from);
+      return `<section class="panel week-card${w.i === nowWeek ? ' now' : ''}">
+        <div class="panel-head">
+          <div>
+            <p class="card-label">WEEK ${w.i + 1}${w.i === nowWeek ? ' · NOW' : ''}</p>
+            <h2>${w.i + 1}주차</h2>
+            <p class="week-range">${y}년 ${w.from.getMonth() + 1}월 ${w.from.getDate()}일 ~ ${w.to.getMonth() + 1}월 ${w.to.getDate()}일</p>
+          </div>
+          <div class="week-card-actions">
+            <span class="week-count${w.items.length ? '' : ' zero'}">${w.items.length}건</span>
+            <button type="button" class="secondary-btn" data-add-week="${iso(addDate)}">이 주에 일정 추가</button>
+          </div>
+        </div>
+        ${w.items.length
+          ? `<div class="task-list all">${w.items.map(it => taskItem(it, { pill: true })).join('')}</div>`
+          : '<div class="empty">이 주에는 예정된 수행평가가 없어요.</div>'}
+      </section>`;
+    }).join('');
+  }
+
+  function openList(title, kicker, arr) {
+    $('listTitle').textContent = title;
+    $('listKicker').textContent = kicker;
+    $('listBody').innerHTML = arr.length
+      ? arr.map(it => taskItem(it, { pill: true })).join('')
+      : '<div class="empty">해당하는 수행평가가 없어요.</div>';
+    $('listDialog').showModal();
+  }
+
+  function startCountdown(target) {
+    if (cdTimer) clearInterval(cdTimer);
+    const tick = () => {
+      const el = $('nearestDday');
+      if (!el) return;
+      const ms = Math.max(0, target - new Date());
+      const dd = Math.floor(ms / 86400000);
+      el.title = dd + '일 ' + String(Math.floor(ms / 3600000) % 24).padStart(2, '0') + ':' +
+        String(Math.floor(ms / 60000) % 60).padStart(2, '0') + ':' + String(Math.floor(ms / 1000) % 60).padStart(2, '0') + ' 남음';
+    };
+    tick();
+    cdTimer = setInterval(tick, 1000);
+  }
+
+  /* ---------- 알림 ---------- */
+  function intervalMs() {
+    const n = Math.max(1, Number(settings.intervalValue) || 1);
+    return n * (settings.intervalUnit === 'day' ? 86400000 : 3600000);
+  }
+  function notifySummaryText() {
+    if (settings.mode === 'off') return '지금은 알림이 꺼져 있어요.';
+    const base = '마감 ' + settings.soonDays + '일 전부터, ';
+    const how = settings.mode === 'daily'
+      ? '매일 ' + settings.dailyTime + '에 한 번'
+      : settings.intervalValue + (settings.intervalUnit === 'day' ? '일' : '시간') + '마다';
+    const quiet = settings.quietNight ? ' (밤 10시~아침 7시 제외)' : '';
+    const last = settings.lastNotifiedAt ? ' · 마지막 알림 ' + new Date(settings.lastNotifiedAt).toLocaleString('ko-KR') : '';
+    return base + how + ' 알려드려요' + quiet + '.' + last;
+  }
+
+  function notifyState() {
+    if (!('Notification' in window)) return 'unsupported';
+    return Notification.permission;   // granted | denied | default
+  }
+  const IS_FILE = location.protocol === 'file:';
+
+  // 서비스 워커 등록 — 배포된 https 주소(GitHub Pages 등)에서 동작합니다.
+  // 모바일 크롬은 new Notification()을 막아두어, 알림은 서비스 워커가 대신 띄웁니다.
+  let swReg = null;
+  if ('serviceWorker' in navigator && !IS_FILE) {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => { swReg = reg; return navigator.serviceWorker.ready; })
+      .then(reg => { swReg = reg || swReg; updatePermState(); })
+      .catch(() => {});
+  }
+
+  // 브라우저 알림이 막혀 있어도 알림을 놓치지 않도록, 화면 안에 알림 카드를 띄웁니다.
+  function showInPageAlert(title, lines, extra) {
+    $('alertPopTitle').textContent = title;
+    $('alertPopList').innerHTML = lines.map(l => `<li>${escapeHtml(l)}</li>`).join('') +
+      (extra ? `<li>외 ${extra}건</li>` : '');
+    $('alertPop').classList.add('show');
+  }
+
+  // 알림 전달 순서: ① 서비스 워커(모바일 포함 가장 안정적) → ② 브라우저 알림 → ③ 화면 알림 카드
+  function deliver(title, body, tag) {
+    if (notifyState() === 'granted') {
+      if (swReg && swReg.showNotification) {
+        try {
+          swReg.showNotification(title, {
+            body: body, tag: tag || 'ssh-deadline', renotify: true,
+            icon: 'icon.svg', badge: 'icon.svg', data: { url: location.href }
+          });
+          return true;
+        } catch (e) {}
+      }
+      try { new Notification(title, { body: body, tag: tag || 'ssh-deadline' }); return true; } catch (e) {}
+    }
+    return false;
+  }
+
+  function fireNotification(soonItems) {
+    const title = `수행평가 ${soonItems.length}건 마감 임박`;
+    const lines = soonItems.slice(0, 5).map(it => `${it.subject} · ${it.title} (${it.badge})`);
+    const extra = soonItems.length > 5 ? soonItems.length - 5 : 0;
+    if (!deliver(title, lines.join('\n') + (extra ? `\n외 ${extra}건` : ''))) {
+      showInPageAlert(title, lines, extra);
+    }
+    settings.lastNotifiedAt = new Date().toISOString();
+    saveSettings();
+  }
+
+  // 1분마다 조건(방식·간격·조용한 시간)을 확인해 알림을 보냅니다.
+  function notifyTick() {
+    if (settings.mode === 'off') return;
+    const soonItems = lastList.filter(it => it.soon);
+    if (!soonItems.length) return;
+
+    const now = new Date();
+    const hour = now.getHours();
+    if (settings.quietNight && (hour >= 22 || hour < 7)) return;
+
+    const last = settings.lastNotifiedAt ? new Date(settings.lastNotifiedAt) : null;
+    if (settings.mode === 'daily') {
+      const parts = (settings.dailyTime || '18:00').split(':');
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), Number(parts[0]) || 0, Number(parts[1]) || 0);
+      if (now < target) return;
+      if (last && last >= target) return;
+    } else {
+      if (last && (now - last) < intervalMs()) return;
+    }
+    fireNotification(soonItems);
+  }
+
+  // 권한 요청은 사용자가 직접 누를 때(알림 허용·설정 저장)만 합니다.
+  // 화면을 옮기거나 필터를 바꿀 때마다 다시 묻지 않도록 여기서는 절대 요청하지 않습니다.
+  function maybeNotify() {
+    if (!('Notification' in window)) return;
+    notifyTick();
+  }
+
+  function askPermission() {
+    if (!('Notification' in window)) return Promise.resolve('unsupported');
+    if (Notification.permission !== 'default') return Promise.resolve(Notification.permission);
+    try {
+      // 구형 브라우저는 콜백 방식만 지원합니다.
+      const r = Notification.requestPermission(p => updatePermState());
+      return (r && typeof r.then === 'function') ? r : new Promise(res => setTimeout(() => res(Notification.permission), 400));
+    } catch (e) {
+      return Promise.resolve(Notification.permission);
+    }
+  }
+
+  function toast(msg) {
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  /* ---------- 뷰 전환 ---------- */
+  const TITLES = {
+    dashboard: '안녕하세요, 오늘도 미리 준비해요.',
+    month: '한 달을 한눈에 살펴봐요.',
+    week: '한 달을 주차로 나눠 계획해요.',
+    tasks: '이번 학기 수행평가 전체 목록이에요.',
+    manage: '내 일정을 직접 관리해요.'
+  };
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === name + 'View'));
+    document.querySelectorAll('.nav-item[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+    $('pageTitle').textContent = TITLES[name] || '';
+    document.querySelector('.sidebar').classList.remove('open');
+    window.scrollTo({ top: 0 });
+  }
+  document.querySelectorAll('.nav-item[data-view]').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
+  $('mobileMenu').addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
+  $('notificationBtn').addEventListener('click', () => {
+    const soon = lastList.filter(it => it.soon);
+    const blocked = ('Notification' in window) && Notification.permission !== 'granted' && settings.mode !== 'off';
+    toast(soon.length
+      ? `${settings.soonDays}일 이내 마감 ${soon.length}건: ${soon[0].subject} · ${soon[0].title}` + (blocked ? ' (알림 설정에서 허용해 주세요)' : '')
+      : '임박한 수행평가가 없어요.');
+  });
+
+  /* ---------- 일정 편집 ---------- */
+  const dialog = $('taskDialog');
+  function openDialog(idx, presetDate) {
+    const isNew = idx == null;
+    const it = isNew ? { date: presetDate || iso(todayStart()) } : items[idx];
+    $('modalKicker').textContent = isNew ? 'NEW TASK' : 'EDIT TASK';
+    $('modalTitle').textContent = isNew ? '일정 추가' : '일정 수정';
+    $('taskId').value = isNew ? '' : idx;
+    $('taskTitle').value = it.title || '';
+    $('taskSubject').value = it.subject || '';
+    // 학년을 골라 둔 상태에서 새로 추가하면 그 학년으로 미리 채웁니다.
+    const picked = $('globalGrade').value;
+    $('taskGrade').value = isNew ? (['1', '2', '3'].includes(picked) ? picked : '') : gradeOf(it);
+    $('taskDate').value = it.date || '';
+    $('taskPeriod').value = it.period || '';
+    $('taskTime').value = it.time || '';
+    $('taskWeight').value = it.weight || '';
+    $('taskMethod').value = it.method || '';
+    $('taskMemo').value = it.desc || '';
+    $('taskSemester').value = isNew ? '1' : semesterOf(it);
+    $('taskExact').checked = isNew ? true : it.approx === false;
+    $('deleteTaskBtn').classList.toggle('hidden', isNew);
+    dialog.showModal();
+  }
+
+  document.body.addEventListener('click', e => {
+    const trigger = e.target.closest('[data-edit]');
+    if (trigger) {
+      if ($('listDialog').open) $('listDialog').close();
+      openDialog(Number(trigger.dataset.edit));
+      return;
+    }
+    const more = e.target.closest('[data-list]');
+    if (more) {
+      const kind = more.dataset.list;
+      if (kind === 'soon') openList(settings.soonDays + '일 이내 마감', 'DUE SOON', lastList.filter(it => it.soon));
+      else if (kind === 'open') openList('남은 수행평가', 'REMAINING', lastList.filter(it => !it.past));
+      else openList('지난 수행평가', 'FINISHED', lastList.filter(it => it.past));
+      return;
+    }
+    const addWeek = e.target.closest('[data-add-week]');
+    if (addWeek) {
+      openDialog(null, addWeek.dataset.addWeek);
+      return;
+    }
+    const weekBtn = e.target.closest('[data-week]');
+    if (weekBtn) {
+      const from = new Date(weekBtn.dataset.week + 'T00:00:00');
+      const to = addDays(from, 6);
+      openList(fmtMD(from) + ' ~ ' + fmtMD(to) + ' 주간 일정', 'THIS WEEK',
+        lastList.filter(it => overlaps(it, from, to)));
+    }
+  });
+  $('addTaskBtn').addEventListener('click', () => openDialog(null));
+  $('addTaskBtn2').addEventListener('click', () => openDialog(null));
+  document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+
+  $('taskForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const idxRaw = $('taskId').value;
+    const period = $('taskPeriod').value.trim();
+    const next = {
+      subject: $('taskSubject').value.trim(),
+      grade: $('taskGrade').value,
+      title: $('taskTitle').value.trim(),
+      date: $('taskDate').value,
+      period: period,
+      // '날짜 확정'을 켜면 기간으로 늘리지 않고 그 하루로만 표시합니다.
+      approx: $('taskExact').checked ? false : !!period,
+      semester: $('taskSemester').value,
+      time: $('taskTime').value.trim(),
+      weight: $('taskWeight').value.trim(),
+      method: $('taskMethod').value.trim(),
+      desc: $('taskMemo').value.trim()
+    };
+    if (idxRaw === '') items.push(next); else items[Number(idxRaw)] = next;
+    saveItems();
+    dialog.close();
+    render();
+    toast(idxRaw === '' ? '일정을 추가했어요.' : '일정을 수정했어요.');
+  });
+
+  $('deleteTaskBtn').addEventListener('click', () => {
+    const idx = Number($('taskId').value);
+    if (!confirm('이 일정을 삭제할까요?')) return;
+    items.splice(idx, 1);
+    saveItems();
+    dialog.close();
+    render();
+    toast('일정을 삭제했어요.');
+  });
+
+  /* ---------- 필터 ---------- */
+  ['dashboardSubject', 'subjectFilter', 'globalGrade', 'manageSubject', 'showPast'].forEach(id => $(id).addEventListener('change', render));
+  $('searchInput').addEventListener('input', render);
+  $('prevMonth').addEventListener('click', () => { calendarCursor.setMonth(calendarCursor.getMonth() - 1); render(); });
+  $('nextMonth').addEventListener('click', () => { calendarCursor.setMonth(calendarCursor.getMonth() + 1); render(); });
+  $('goToday').addEventListener('click', () => { const t = todayStart(); calendarCursor = new Date(t.getFullYear(), t.getMonth(), 1); render(); });
+  $('prevWeekMonth').addEventListener('click', () => {
+    weekMonth = new Date(weekMonth.getFullYear(), weekMonth.getMonth() - 1, 1);
+    weekIndex = -1;
+    render();
+  });
+  $('nextWeekMonth').addEventListener('click', () => {
+    weekMonth = new Date(weekMonth.getFullYear(), weekMonth.getMonth() + 1, 1);
+    weekIndex = -1;
+    render();
+  });
+  $('goThisMonth').addEventListener('click', () => {
+    const t = todayStart();
+    weekMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+    weekIndex = weekIndexOf(t);
+    render();
+  });
+  $('weekTabs').addEventListener('click', e => {
+    const tab = e.target.closest('[data-week-index]');
+    if (!tab) return;
+    weekIndex = Number(tab.dataset.weekIndex);
+    render();
+  });
+
+  /* ---------- 내보내기 · 가져오기 ---------- */
+  $('exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '수행평가_일정_' + iso(new Date()) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  $('importBtn').addEventListener('click', () => $('importFile').click());
+  $('importFile').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data)) throw new Error('invalid');
+        items = data;
+        saveItems();
+        render();
+        toast('일정을 가져왔어요.');
+      } catch (err) {
+        toast('올바른 JSON 파일이 아니에요.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+  $('restoreBtn').addEventListener('click', () => {
+    if (!confirm('학교 평가계획 기본 일정으로 되돌릴까요? 현재 목록은 사라집니다.')) return;
+    items = DEFAULT_ITEMS.slice();
+    saveItems();
+    render();
+    toast('기본 계획을 복원했어요.');
+  });
+  $('resetBtn').addEventListener('click', () => {
+    if (!confirm('모든 일정을 삭제하고 초기화할까요?')) return;
+    items = [];
+    saveItems();
+    render();
+    toast('전체 일정을 비웠어요.');
+  });
+
+  /* ---------- 설정 ---------- */
+  // 권한 안내만 따로 갱신합니다. (입력 중인 값을 건드리지 않기 위해 분리)
+  function updatePermState() {
+    const perm = notifyState();
+    const label = {
+      granted: '이 기기에서 브라우저 알림을 받는 중이에요.',
+      denied: '브라우저에서 알림이 차단돼 있어요. 주소창 옆 자물쇠 아이콘에서 허용해 주세요.',
+      default: '아직 브라우저 알림을 허용하지 않았어요.',
+      unsupported: '이 브라우저는 알림을 지원하지 않아요.'
+    };
+    $('permState').textContent = label[perm];
+    $('permissionBtn').textContent = perm === 'granted' ? '허용됨' : '알림 허용';
+    $('permissionBtn').disabled = (perm === 'granted' || perm === 'unsupported');
+
+    const warn = $('permWarn');
+    if (perm === 'granted') {
+      warn.classList.remove('hidden');
+      warn.textContent = swReg
+        ? '알림이 켜져 있어요. 이 사이트를 홈 화면(또는 앱)으로 추가해 두면 더 안정적으로 받을 수 있어요. 다만 브라우저를 완전히 종료하면 알림이 멈춥니다.'
+        : '알림이 켜져 있어요. 이 페이지가 열려 있는 동안(다른 탭에 있어도) 알림이 도착합니다.';
+    } else {
+      warn.classList.remove('hidden');
+      warn.textContent = IS_FILE
+        ? '이 페이지를 파일로 바로 열면(file://) 브라우저가 알림 권한을 기억하지 못해, 허용을 눌러도 계속 "허용하지 않음"으로 돌아갑니다. 인터넷 주소(https)로 배포해 접속하면 정상 동작합니다. 그 전까지는 화면 오른쪽 아래 알림 카드로 대신 알려드립니다.'
+        : '브라우저 알림이 꺼져 있어도 괜찮아요. 화면 오른쪽 아래 알림 카드로 대신 알려드립니다.';
+    }
+  }
+
+  function syncSettingsForm() {
+    $('soonDays').value = String(settings.soonDays);
+    $('notifyMode').value = settings.mode;
+    $('intervalValue').value = settings.intervalValue;
+    $('intervalUnit').value = settings.intervalUnit;
+    $('dailyTime').value = settings.dailyTime;
+    $('quietNight').checked = !!settings.quietNight;
+    $('intervalRow').classList.toggle('hidden', settings.mode !== 'interval');
+    $('dailyRow').classList.toggle('hidden', settings.mode !== 'daily');
+    $('notifySummary').textContent = notifySummaryText();
+    updatePermState();
+  }
+
+  // 권한 상태가 브라우저 쪽에서 바뀌어도 안내가 최신으로 유지되도록 감시합니다.
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'notifications' })
+      .then(st => { st.onchange = updatePermState; })
+      .catch(() => {});
+  }
+  setInterval(() => { if ($('settingsDialog').open) updatePermState(); }, 2000);
+  $('alertPopClose').addEventListener('click', () => $('alertPop').classList.remove('show'));
+  $('settingsBtn').addEventListener('click', () => { syncSettingsForm(); $('settingsDialog').showModal(); });
+  $('notifyMode').addEventListener('change', () => {
+    $('intervalRow').classList.toggle('hidden', $('notifyMode').value !== 'interval');
+    $('dailyRow').classList.toggle('hidden', $('notifyMode').value !== 'daily');
+  });
+  $('permissionBtn').addEventListener('click', () => {
+    askPermission().then(p => {
+      syncSettingsForm();
+      if (p === 'granted') toast('알림이 허용되었어요.');
+      else if (p === 'denied') toast('브라우저에서 알림이 차단돼 있어요. 주소창 옆 자물쇠 아이콘에서 허용해 주세요.');
+      else if (p !== 'unsupported') toast('알림이 허용되지 않았어요.');
+    });
+  });
+  $('testNotify').addEventListener('click', () => {
+    const soon = lastList.filter(it => it.soon);
+    const lines = soon.length
+      ? soon.slice(0, 3).map(it => `${it.subject} · ${it.title} (${it.badge})`)
+      : ['지금은 마감이 임박한 수행평가가 없어요.'];
+    if (deliver('테스트 알림', lines.join('\n'), 'ssh-test')) toast('브라우저 알림을 보냈어요.');
+    else { showInPageAlert('테스트 알림', lines, 0); toast('브라우저 알림 대신 화면 알림으로 보여드렸어요.'); }
+  });
+  $('settingsForm').addEventListener('submit', () => {
+    settings.soonDays = Number($('soonDays').value) || 7;
+    settings.mode = $('notifyMode').value;
+    settings.intervalValue = Math.min(99, Math.max(1, Number($('intervalValue').value) || 6));
+    settings.intervalUnit = $('intervalUnit').value;
+    settings.dailyTime = $('dailyTime').value || '18:00';
+    settings.quietNight = $('quietNight').checked;
+    settings.lastNotifiedAt = '';   // 설정을 바꾸면 새 주기로 다시 시작합니다
+    saveSettings();
+    // 저장은 사용자가 직접 누른 행동이므로, 이때만 권한을 한 번 물어봅니다.
+    if (settings.mode !== 'off') askPermission();
+    render();
+    toast('알림 설정을 저장했어요. ' + notifySummaryText().split(' ·')[0]);
+  });
+  setInterval(notifyTick, 60000);
+  // 배경 탭에서는 브라우저가 타이머를 늦추므로, 화면으로 돌아올 때 놓친 알림을 바로 확인합니다.
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) notifyTick(); });
+  window.addEventListener('focus', notifyTick);
+
+  render();
+})();
+</script>
+</body>
+</html>
