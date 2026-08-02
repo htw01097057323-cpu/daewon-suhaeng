@@ -1,3 +1,7 @@
 requests==2.32.3
 lxml==5.3.0
 pyhwp==0.1b15
+# pyhwp가 의존성으로 선언하지 않지만 실제로 import 하는 패키지들
+six==1.17.0
+olefile==0.47
+cryptography==44.0.0

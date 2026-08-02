@@ -53,6 +53,9 @@ KST = timezone(timedelta(hours=9))
 ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = ROOT / "data.json"
 
+# 처리한 자료 수 / 실패한 자료 수 (모두 실패하면 작업을 실패로 알린다)
+STATS = {"attempted": 0, "failed": 0}
+
 # 지필평가 열은 수행평가가 아니므로 제외한다.
 EXAM_WORDS = ("중간고사", "기말고사", "지필", "중간 고사", "기말 고사")
 EXAM_METHODS = ("선택형", "서답형", "혼합형")
@@ -416,6 +419,7 @@ def collect_online(target_year: str | None, known_urls: set[str]) -> tuple[list[
                 log(f"  · {post['title']} — 이미 반영된 자료, 건너뜀")
                 continue
             log(f"  · {post['title']} ({post['date']})")
+            STATS["attempted"] += 1
             try:
                 att = find_attachment(session, post["url"])
                 if not att:
@@ -437,6 +441,7 @@ def collect_online(target_year: str | None, known_urls: set[str]) -> tuple[list[
                 sources.append({"category": category, "title": post["title"],
                                 "url": post["url"], "date": post["date"], "file": name})
             except Exception as e:
+                STATS["failed"] += 1
                 log(f"    실패: {e}")
             time.sleep(1)   # 학교 서버에 부담을 주지 않도록 간격을 둔다
     return found, sources
@@ -484,8 +489,11 @@ def main() -> int:
         args.out.write_text(json.dumps(found, ensure_ascii=False, indent=2), encoding="utf-8")
         log(f"추출 결과 {len(found)}건을 {args.out}에 저장했습니다.")
 
-    log(f"\n총 {len(found)}건 추출")
+    log(f"\n총 {len(found)}건 추출 (자료 {STATS['attempted']}건 중 실패 {STATS['failed']}건)")
     if not found:
+        if STATS["attempted"] and STATS["failed"] == STATS["attempted"]:
+            log("처리한 자료가 모두 실패했습니다. 파서나 의존성을 확인해 주세요.")
+            return 1
         log("새로 가져온 항목이 없습니다. data.json을 그대로 둡니다.")
         return 0
 
