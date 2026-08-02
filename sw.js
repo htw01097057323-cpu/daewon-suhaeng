@@ -1,4 +1,4 @@
-/* 수행평가 알리미 — 서비스 워커
+﻿/* 수행평가 알리미 — 서비스 워커
    - 알림 표시: 모바일 크롬은 new Notification()을 막아두어, 알림은 이 워커가 대신 띄웁니다.
    - 오프라인: 한 번 연 페이지는 인터넷이 끊겨도 열립니다(네트워크 우선, 실패 시 캐시).
    - 푸시: 나중에 푸시 서버를 붙이면 페이지를 닫아도 알림이 오도록 push 핸들러를 준비해 뒀습니다. */
@@ -38,8 +38,8 @@ self.addEventListener('message', e => {
     body: d.body || '',
     tag: d.tag || 'ssh-deadline',
     renotify: true,
-    icon: './icon.svg',
-    badge: './icon.svg',
+    icon: './icon.png',
+    badge: './icon.png',
     data: { url: d.url || './' }
   }));
 });
@@ -60,8 +60,8 @@ self.addEventListener('push', e => {
   try { d = e.data ? e.data.json() : {}; } catch (err) {}
   e.waitUntil(self.registration.showNotification(d.title || '수행평가 알리미', {
     body: d.body || '마감이 임박한 수행평가가 있어요.',
-    icon: './icon.svg',
-    badge: './icon.svg',
+    icon: './icon.png',
+    badge: './icon.png',
     tag: 'ssh-push',
     data: { url: d.url || './' }
   }));
