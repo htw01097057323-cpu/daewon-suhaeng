@@ -28,6 +28,7 @@ import tempfile
 import time
 import unicodedata
 from datetime import datetime, timezone, timedelta
+from difflib import SequenceMatcher
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -342,6 +343,48 @@ def item_id(it: dict) -> str:
     ])
 
 
+def same_subject(a: str, b: str) -> bool:
+    """'국어(문학)'과 '문학', '인공지능 기초'와 '인공지능기초'를 같은 과목으로 본다."""
+    ka, kb = key_of(a), key_of(b)
+    if not ka or not kb:
+        return False
+    if ka == kb or ka in kb or kb in ka:
+        return True
+    return SequenceMatcher(None, ka, kb).ratio() >= 0.8
+
+
+def same_title(a: str, b: str) -> bool:
+    """'과학 스피치(과학적 의사소통)'처럼 줄여 쓴 제목과 원문 제목을 같은 것으로 본다."""
+    ka, kb = key_of(a), key_of(b)
+    if not ka or not kb:
+        return False
+    if ka == kb:
+        return True
+    matcher = SequenceMatcher(None, ka, kb)
+    if matcher.ratio() >= 0.8:
+        return True
+    # 짧은 제목이 긴 제목 안에 흩어져 거의 그대로 들어 있으면 같은 항목으로 본다.
+    short = min(len(ka), len(kb))
+    if short >= 6:
+        overlap = sum(b.size for b in matcher.get_matching_blocks())
+        return overlap / short >= 0.75
+    return False
+
+
+def find_similar(items: list[dict], it: dict) -> dict | None:
+    """같은 과목·학기 안에서 사실상 같은 항목을 찾는다(손질된 제목과의 중복 방지)."""
+    if not it.get("title"):
+        return None
+    for ex in items:
+        if str(ex.get("semester", "1")) != str(it.get("semester", "1")):
+            continue
+        if not same_subject(ex.get("subject", ""), it.get("subject", "")):
+            continue
+        if same_title(ex.get("title", ""), it.get("title", "")):
+            return ex
+    return None
+
+
 def load_existing() -> dict:
     if DATA_PATH.exists():
         try:
@@ -356,7 +399,7 @@ def merge(existing: dict, found: list[dict], sources: list[dict]) -> tuple[dict,
     added = updated = 0
     for it in found:
         k = item_id(it)
-        old = by_id.get(k)
+        old = by_id.get(k) or find_similar(list(by_id.values()), it)
         if old is None:
             by_id[k] = it
             added += 1
