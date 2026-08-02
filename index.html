@@ -114,6 +114,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex San
 .filters input[type=checkbox]{width:15px;height:15px;padding:0;accent-color:var(--purple)}
 .all.task-list .task-item{grid-template-columns:auto 1fr auto auto auto}
 .pill{font-size:10px;font-weight:700;color:#6e5ec5;background:#edeafb;border-radius:20px;padding:5px 10px;white-space:nowrap}
+.pill.review{color:#8a6a2a;background:#fbf2d8}
 .sync-hero{border-radius:20px;background:#dfe6d9;padding:38px 45px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;overflow:hidden}
 .sync-hero h2{font-family:'Gowun Dodum';font-size:29px;font-weight:400;margin:0 0 13px}
 .sync-hero p:not(.card-label){font-size:12px;color:#6d7468;line-height:1.7;margin:0}
@@ -328,7 +329,7 @@ a.school-card:hover{background:#dcdcd3}
             <button class="primary-btn" id="addTaskBtn2">＋ 일정 추가</button>
           </div>
         </div>
-        <p class="manage-note">이 브라우저에 자동 저장됩니다(localStorage). 다른 기기와 공유하려면 아래 내보내기·가져오기를 사용하세요.</p>
+        <p class="manage-note" id="syncNote">이 브라우저에 자동 저장됩니다(localStorage). 다른 기기와 공유하려면 아래 내보내기·가져오기를 사용하세요.</p>
         <div id="manageList" class="task-list all"></div>
         <div class="manage-actions">
           <button class="secondary-btn" id="exportBtn">내보내기 (JSON)</button>
@@ -623,6 +624,61 @@ a.school-card:hover{background:#dcdcd3}
   }
   function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
 
+  /* ---------- 학교 평가계획 자동 반영 ----------
+     data.json은 GitHub Actions가 매일 학교 교수학습센터를 확인해 갱신합니다.
+     사용자가 직접 고치거나 지운 일정은 그대로 두고, 새로 올라온 항목만 더합니다. */
+  const SEEN_KEY = 'ssh_seen_v1';
+  let baseline = DEFAULT_ITEMS.slice();   // data.json을 못 읽을 때 쓰는 예비 데이터
+  let syncInfo = null;
+
+  function normKey(s) { return String(s || '').replace(/[\s·,\-()]+/g, ''); }
+  // 예전에 저장된 일정에는 year 항목이 없으므로 학기·과목·평가명으로만 같은 항목인지 판단합니다.
+  function idOf(it) {
+    return [it.semester || '1', normKey(it.subject), normKey(it.title)].join('|');
+  }
+  function loadSeen() {
+    try { return JSON.parse(localStorage.getItem(SEEN_KEY)) || []; } catch (e) { return []; }
+  }
+  function saveSeen(ids) {
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify(ids)); } catch (e) {}
+  }
+
+  // 새로 올라온 학교 일정을 찾아 현재 목록에 더합니다. 지운 일정이 되살아나지 않도록
+  // 한 번이라도 본 항목의 id를 기억해 둡니다.
+  function applyBaseline(fresh) {
+    baseline = fresh.slice();
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) {          // 처음 방문 — 학교 데이터를 그대로 사용
+      items = baseline.slice();
+      saveItems();
+      saveSeen(baseline.map(idOf));
+      return 0;
+    }
+    const seen = loadSeen();
+    const have = new Set(items.map(idOf));
+    const known = new Set(seen);
+    const added = baseline.filter(b => !have.has(idOf(b)) && !known.has(idOf(b)));
+    if (added.length) {
+      items = items.concat(added);
+      saveItems();
+    }
+    saveSeen(Array.from(new Set(seen.concat(baseline.map(idOf)))));
+    return added.length;
+  }
+
+  function loadSchoolData() {
+    return fetch('data.json', { cache: 'no-cache' })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('no data.json'))))
+      .then(data => {
+        if (!data || !Array.isArray(data.items) || !data.items.length) throw new Error('empty');
+        syncInfo = { generatedAt: data.generatedAt || '', sources: data.sources || [], count: data.items.length };
+        const added = applyBaseline(data.items);
+        render();
+        if (added) toast(`학교 평가계획에서 ${added}건이 새로 추가됐어요. 일정 관리에서 확인해 주세요.`);
+      })
+      .catch(() => { /* 파일이 없거나 오프라인 — 내장 데이터로 그대로 동작합니다 */ });
+  }
+
   let items = loadItems();
   let settings = loadSettings();
   let calendarCursor = null;
@@ -653,22 +709,25 @@ a.school-card:hover{background:#dcdcd3}
   //  - 2015 개정에만 있는 과목(화법과 작문 등) → 3학년
   //  - 두 교육과정에 같은 이름으로 있는 과목   → 추정(true가 아님)으로 표시하고 직접 확인 권장
   const GRADE_MAP = {
-    '국어(공통국어1)': ['1', true], '국어(문학)': ['2', false], '국어(독서와 작문)': ['2', true],
+    // 아래 값은 2026학년도 1학기 평가계획서의 과목별 머리표(학교명·학년·과목·학기)에서 읽은 실제 학년입니다.
+    '국어(공통국어1)': ['1', true], '국어(문학)': ['2', true], '국어(독서와 작문)': ['2', true],
     '국어(화법과 작문)': ['3', true], '국어(심화국어)': ['3', true],
-    '영어(공통영어1)': ['1', true], '영어Ⅰ': ['2', false], '영어 발표와 토론': ['2', true],
-    '영어 독해와 작문': ['2', false], '심화영어Ⅰ': ['3', true], '진로 영어': ['3', true],
-    '수학(공통수학1)': ['1', true], '대수': ['2', true], '미적분Ⅰ': ['2', true],
-    '기하': ['2', false], '확률과통계': ['2', false],
-    '한국사': ['1', true], '통합사회1': ['1', true], '세계사': ['2', false], '법과사회': ['2', true],
+    '영어(공통영어1)': ['1', true], '영어Ⅰ': ['2', true], '영어 발표와 토론': ['2', true],
+    '영어 독해와 작문': ['3', true], '심화영어Ⅰ': ['3', true], '진로 영어': ['3', true],
+    '수학(공통수학1)': ['1', true], '대수': ['2', true], '기하': ['2', true],
+    '미적분Ⅰ': ['3', true], '확률과통계': ['3', true],
+    '한국사': ['1', true], '통합사회1': ['1', true], '세계사': ['2', true],
     '동아시아사': ['3', true], '사회문화': ['3', true], '생활과윤리': ['3', true], '세계지리': ['3', true],
-    '국제경제': ['3', true], '사회탐구방법': ['3', true],
+    '국제경제': ['3', true], '사회탐구방법': ['3', true], '논리학': ['3', true],
     '통합과학1': ['1', true], '과학탐구실험1': ['1', true], '물리학': ['2', true], '지구과학': ['2', true],
-    '물리학Ⅱ': ['3', true], '화학Ⅱ': ['3', true], '생명과학Ⅱ': ['3', true], '지구과학Ⅱ': ['3', true],
-    '음악': ['2', false], '음악 감상과 비평': ['2', false], '미술': ['2', false], '미술 감상과 비평': ['2', false],
-    '체육1': ['1', false], '스포츠 문화': ['2', false], '운동과 건강': ['2', false],
-    '정보': ['2', false], '인공지능 기초': ['2', false], '일본어': ['2', true], '일본어 회화': ['2', false],
-    '기술·가정': ['2', false], '한문': ['2', true],
-    '융합 탐구(정보과제연구 등)': ['3', false], '논리학': ['3', false]
+    '화학Ⅱ': ['3', true], '생명과학Ⅱ': ['3', true], '지구과학Ⅱ': ['3', true],
+    '음악': ['2', true], '미술': ['2', true], '음악 감상과 비평': ['3', true], '미술 감상과 비평': ['3', true],
+    '정보': ['2', true], '인공지능 기초': ['3', true], '일본어': ['2', true], '일본어 회화': ['3', true],
+    '기술·가정': ['1', true], '한문': ['1', true],
+    '융합 탐구(정보과제연구 등)': ['3', true],
+    // 아래 다섯 과목은 계획서 표 서식이 달라 자동 추출에 잡히지 않았습니다. 교육과정 기준 추정값입니다.
+    '물리학Ⅱ': ['3', false], '법과사회': ['2', false],
+    '체육1': ['1', false], '스포츠 문화': ['2', false], '운동과 건강': ['2', false]
   };
   const GRADE1_KEYS = ['공통국어', '공통영어', '공통수학', '통합사회', '통합과학', '과학탐구실험', '한국사'];
 
@@ -769,7 +828,7 @@ a.school-card:hover{background:#dcdcd3}
     return `<article class="task-item${it.past ? ' past' : ''}" data-idx="${it.idx}">
       <span class="subject-dot ${it.color}"></span>
       <div class="task-info"><b>${escapeHtml(it.title || '(제목 없음)')}</b><small>${escapeHtml(it.subject || '미분류')} · ${escapeHtml(gradeLabel(it.grade, it.gradeSure))} · ${metaLine(it)}</small></div>
-      ${opts.pill ? `<span class="pill">${escapeHtml(it.weight || '비율 미정')}</span>` : ''}
+      ${opts.pill ? `<span class="pill${it.review ? ' review' : ''}">${it.review ? '검토 필요' : escapeHtml(it.weight || '비율 미정')}</span>` : ''}
       <span class="dday${it.past ? ' past' : (it.soon ? ' urgent' : '')}">${it.badge}</span>
       <button class="task-menu" data-edit="${it.idx}" aria-label="수정">⋯</button>
     </article>`;
@@ -839,6 +898,11 @@ a.school-card:hover{background:#dcdcd3}
     $('manageList').innerHTML = managed.length
       ? managed.map(it => taskItem(it, { pill: true })).join('')
       : '<div class="empty">등록된 일정이 없어요. 위의 “일정 추가”를 눌러 시작하세요.</div>';
+
+    if (syncInfo) {
+      const when = syncInfo.generatedAt ? new Date(syncInfo.generatedAt).toLocaleString('ko-KR') : '기록 없음';
+      $('syncNote').textContent = `학교 교수학습센터를 매일 확인해 새 평가계획을 자동으로 가져옵니다. 마지막 확인 ${when} · 학교 자료 ${syncInfo.count}건. 직접 고치거나 지운 일정은 그대로 유지되며, 이 브라우저에 저장됩니다.`;
+    }
 
     lastList = list;
     renderMonth(list);
@@ -1333,7 +1397,8 @@ a.school-card:hover{background:#dcdcd3}
   });
   $('restoreBtn').addEventListener('click', () => {
     if (!confirm('학교 평가계획 기본 일정으로 되돌릴까요? 현재 목록은 사라집니다.')) return;
-    items = DEFAULT_ITEMS.slice();
+    items = baseline.slice();
+    saveSeen(baseline.map(idOf));
     saveItems();
     render();
     toast('기본 계획을 복원했어요.');
@@ -1436,6 +1501,7 @@ a.school-card:hover{background:#dcdcd3}
   window.addEventListener('focus', notifyTick);
 
   render();
+  loadSchoolData();   // 학교에서 새로 올라온 평가계획을 확인해 반영합니다
 })();
 </script>
 </body>
